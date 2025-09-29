@@ -24,48 +24,6 @@ namespace GameBox.Games
         }
     }
 
-    public partial class MemoryMatchGame : Window
-    {
-        public MemoryMatchGame() 
-        { 
-            InitializeComponent();
-            Title = "Memory Match Game";
-            Width = 600;
-            Height = 500;
-            WindowStartupLocation = WindowStartupLocation.CenterScreen;
-            Content = new System.Windows.Controls.TextBlock 
-            { 
-                Text = "🃏 Memory Match Game\n\nComing Soon!\n\nFlip cards to find matching pairs.", 
-                FontSize = 18, 
-                HorizontalAlignment = HorizontalAlignment.Center, 
-                VerticalAlignment = VerticalAlignment.Center,
-                TextAlignment = TextAlignment.Center,
-                Margin = new Thickness(20)
-            };
-        }
-    }
-
-    public partial class BreakoutGame : Window
-    {
-        public BreakoutGame() 
-        { 
-            InitializeComponent();
-            Title = "Breakout Game";
-            Width = 600;
-            Height = 500;
-            WindowStartupLocation = WindowStartupLocation.CenterScreen;
-            Content = new System.Windows.Controls.TextBlock 
-            { 
-                Text = "🧱 Breakout Game\n\nComing Soon!\n\nBreak bricks with your ball and paddle.", 
-                FontSize = 18, 
-                HorizontalAlignment = HorizontalAlignment.Center, 
-                VerticalAlignment = VerticalAlignment.Center,
-                TextAlignment = TextAlignment.Center,
-                Margin = new Thickness(20)
-            };
-        }
-    }
-
     public partial class AsteroidsGame : Window
     {
         public AsteroidsGame() 
