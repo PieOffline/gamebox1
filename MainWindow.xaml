@@ -1,0 +1,139 @@
+<Window x:Class="GameBox.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:GameBox"
+        mc:Ignorable="d"
+        Title="GameBox - Collection of Fun Mini Games" 
+        Height="750" Width="1200" 
+        WindowStartupLocation="CenterScreen"
+        Background="{StaticResource BackgroundLightBrush}"
+        ResizeMode="CanMinimize">
+    
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <!-- Header -->
+        <Border Grid.Row="0" Background="{StaticResource PrimaryGradient}" Padding="20">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                
+                <StackPanel Grid.Column="0" Orientation="Vertical">
+                    <TextBlock Text="🎮 GameBox" FontSize="28" FontWeight="Bold" 
+                               Foreground="{StaticResource TextLightBrush}"/>
+                    <TextBlock Text="Collection of Fun Mini Games" FontSize="14" 
+                               Foreground="{StaticResource TextLightBrush}" Opacity="0.8"/>
+                </StackPanel>
+                
+                <StackPanel Grid.Column="1" Orientation="Vertical" Margin="20,0">
+                    <TextBlock Text="Your Code:" FontSize="12" 
+                               Foreground="{StaticResource TextLightBrush}" Opacity="0.8"/>
+                    <TextBlock Text="{Binding UserFruitCode}" FontSize="18" FontWeight="Bold"
+                               Foreground="{StaticResource AccentOrangeBrush}"/>
+                    <TextBlock Text="{Binding LocalIpAddress}" FontSize="10" 
+                               Foreground="{StaticResource TextLightBrush}" Opacity="0.6"/>
+                </StackPanel>
+                
+                <StackPanel Grid.Column="2" Orientation="Vertical" Margin="20,0">
+                    <TextBlock Text="Multiplayer Record:" FontSize="12" 
+                               Foreground="{StaticResource TextLightBrush}" Opacity="0.8"/>
+                    <TextBlock FontSize="16" FontWeight="Bold" Foreground="{StaticResource SuccessGreenBrush}">
+                        <Run Text="{Binding ScoreManagerInstance.MultiplayerWins}"/>
+                        <Run Text="/" Foreground="{StaticResource TextLightBrush}"/>
+                        <Run Text="{Binding ScoreManagerInstance.GamesPlayed}"/>
+                    </TextBlock>
+                    <TextBlock FontSize="12" Foreground="{StaticResource TextLightBrush}" Opacity="0.8">
+                        <Run Text="{Binding ScoreManagerInstance.WinPercentage, StringFormat=F1}"/>
+                        <Run Text="%"/>
+                    </TextBlock>
+                </StackPanel>
+            </Grid>
+        </Border>
+
+        <!-- Main Content -->
+        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" Padding="20">
+            <StackPanel>
+                
+                <!-- Single Player Games Section -->
+                <TextBlock Text="🎯 Single Player Games" FontSize="24" FontWeight="Bold" 
+                           Foreground="{StaticResource TextDarkBrush}" Margin="0,0,0,20"/>
+                
+                <WrapPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                    <Button Content="🏓 Pong" Style="{StaticResource GameButtonStyle}" 
+                            Click="PlayPong_Click" Width="200" Height="80"/>
+                    <Button Content="🔗 Connect Dots" Style="{StaticResource GameButtonStyle}" 
+                            Click="PlayConnectDots_Click" Width="200" Height="80"/>
+                    <Button Content="🐍 Snake" Style="{StaticResource GameButtonStyle}" 
+                            Click="PlaySnake_Click" Width="200" Height="80"/>
+                    <Button Content="🧩 Tetris" Style="{StaticResource GameButtonStyle}" 
+                            Click="PlayTetris_Click" Width="200" Height="80"/>
+                    <Button Content="🃏 Memory Match" Style="{StaticResource GameButtonStyle}" 
+                            Click="PlayMemoryMatch_Click" Width="200" Height="80"/>
+                    <Button Content="🧱 Breakout" Style="{StaticResource GameButtonStyle}" 
+                            Click="PlayBreakout_Click" Width="200" Height="80"/>
+                    <Button Content="🌌 Asteroids" Style="{StaticResource GameButtonStyle}" 
+                            Click="PlayAsteroids_Click" Width="200" Height="80"/>
+                    <Button Content="🌀 Maze Runner" Style="{StaticResource GameButtonStyle}" 
+                            Click="PlayMaze_Click" Width="200" Height="80"/>
+                    <Button Content="🎵 Simon Says" Style="{StaticResource GameButtonStyle}" 
+                            Click="PlaySimon_Click" Width="200" Height="80"/>
+                    <Button Content="🔢 2048" Style="{StaticResource GameButtonStyle}" 
+                            Click="Play2048_Click" Width="200" Height="80"/>
+                </WrapPanel>
+
+                <!-- Separator -->
+                <Separator Margin="0,40" Background="{StaticResource PrimaryBlueBrush}" Height="2"/>
+
+                <!-- Multiplayer Games Section -->
+                <TextBlock Text="🌐 LAN Multiplayer Games" FontSize="24" FontWeight="Bold" 
+                           Foreground="{StaticResource TextDarkBrush}" Margin="0,0,0,20"/>
+                
+                <TextBlock Text="Enter your opponent's fruit code to connect and play!" 
+                           FontSize="14" Foreground="{StaticResource TextDarkBrush}" 
+                           Opacity="0.7" Margin="0,0,0,20" HorizontalAlignment="Center"/>
+                
+                <WrapPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                    <Button Content="⭕ Tic-Tac-Toe" Style="{StaticResource GameButtonStyle}" 
+                            Click="PlayTicTacToe_Click" Width="200" Height="80"/>
+                    <Button Content="✂️ Rock Paper Scissors" Style="{StaticResource GameButtonStyle}" 
+                            Click="PlayRockPaperScissors_Click" Width="200" Height="80"/>
+                    <Button Content="♔ Checkers" Style="{StaticResource GameButtonStyle}" 
+                            Click="PlayCheckers_Click" Width="200" Height="80"/>
+                    <Button Content="🚗 Tank Battle" Style="{StaticResource GameButtonStyle}" 
+                            Click="PlayTankBattle_Click" Width="200" Height="80"/>
+                    <Button Content="🏁 Racing Game" Style="{StaticResource GameButtonStyle}" 
+                            Click="PlayRacing_Click" Width="200" Height="80"/>
+                </WrapPanel>
+
+            </StackPanel>
+        </ScrollViewer>
+
+        <!-- Footer -->
+        <Border Grid.Row="2" Background="{StaticResource BackgroundDarkBrush}" Padding="15">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                
+                <TextBlock Grid.Column="0" Text="GameBox v1.0 - Have fun playing!" 
+                           FontSize="12" Foreground="{StaticResource TextLightBrush}" 
+                           VerticalAlignment="Center"/>
+                
+                <Button Grid.Column="1" Content="Reset Scores" 
+                        Style="{StaticResource DangerButtonStyle}" 
+                        Click="ResetScores_Click"/>
+            </Grid>
+        </Border>
+        
+    </Grid>
+</Window>
