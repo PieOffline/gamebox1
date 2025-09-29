@@ -3,27 +3,6 @@ using System.Windows;
 namespace GameBox.Games
 {
     // Placeholder stub classes for remaining single-player games
-    public partial class TetrisGame : Window
-    {
-        public TetrisGame() 
-        { 
-            InitializeComponent();
-            Title = "Tetris Game";
-            Width = 500;
-            Height = 700;
-            WindowStartupLocation = WindowStartupLocation.CenterScreen;
-            Content = new System.Windows.Controls.TextBlock 
-            { 
-                Text = "🧩 Tetris Game\n\nComing Soon!\n\nThis will be the classic block-falling puzzle game.", 
-                FontSize = 18, 
-                HorizontalAlignment = HorizontalAlignment.Center, 
-                VerticalAlignment = VerticalAlignment.Center,
-                TextAlignment = TextAlignment.Center,
-                Margin = new Thickness(20)
-            };
-        }
-    }
-
     public partial class AsteroidsGame : Window
     {
         public AsteroidsGame() 

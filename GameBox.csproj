@@ -11,6 +11,9 @@
     <AssemblyDescription>A collection of fun single-player and multiplayer mini-games</AssemblyDescription>
     <AssemblyVersion>1.0.0.0</AssemblyVersion>
     <FileVersion>1.0.0.0</FileVersion>
+    <StartupObject>GameBox.App</StartupObject>
+    <PublishSingleFile>false</PublishSingleFile>
+    <SelfContained>false</SelfContained>
   </PropertyGroup>
 
   <ItemGroup>

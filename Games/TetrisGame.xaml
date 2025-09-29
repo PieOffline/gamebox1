@@ -1,1 +1,77 @@
-<Window x:Class="GameBox.Games.TetrisGame" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"></Window>
+<Window x:Class="GameBox.Games.TetrisGame" 
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" 
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Tetris Game" Height="700" Width="600" 
+        WindowStartupLocation="CenterScreen"
+        Background="{StaticResource BackgroundLightBrush}"
+        KeyDown="Window_KeyDown"
+        Focusable="True"
+        Closed="Window_Closed">
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="400"/>
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
+        
+        <!-- Game Board -->
+        <Border Grid.Column="0" BorderBrush="{StaticResource PrimaryBlueBrush}" BorderThickness="3" 
+                Margin="10" Background="{StaticResource BackgroundDarkBrush}">
+            <Canvas x:Name="GameCanvas" Width="300" Height="600"/>
+        </Border>
+        
+        <!-- Side Panel -->
+        <StackPanel Grid.Column="1" Margin="10" Orientation="Vertical">
+            <!-- Game Info -->
+            <Border Background="{StaticResource PrimaryGradient}" CornerRadius="5" Padding="10" Margin="0,0,0,10">
+                <StackPanel>
+                    <TextBlock Text="🧩 TETRIS" FontSize="20" FontWeight="Bold" 
+                               HorizontalAlignment="Center" Foreground="White"/>
+                    <TextBlock x:Name="ScoreText" Text="Score: 0" FontSize="16" FontWeight="Bold" 
+                               HorizontalAlignment="Center" Foreground="White" Margin="0,5,0,0"/>
+                    <TextBlock x:Name="LevelText" Text="Level: 1" FontSize="14" 
+                               HorizontalAlignment="Center" Foreground="White"/>
+                    <TextBlock x:Name="LinesText" Text="Lines: 0" FontSize="14" 
+                               HorizontalAlignment="Center" Foreground="White"/>
+                </StackPanel>
+            </Border>
+            
+            <!-- Next Piece Preview -->
+            <Border Background="{StaticResource BackgroundDarkBrush}" CornerRadius="5" 
+                    BorderBrush="{StaticResource AccentOrangeBrush}" BorderThickness="2" Padding="10" Margin="0,0,0,10">
+                <StackPanel>
+                    <TextBlock Text="Next Piece" FontSize="14" FontWeight="Bold" 
+                               HorizontalAlignment="Center" Foreground="White" Margin="0,0,0,5"/>
+                    <Canvas x:Name="NextPieceCanvas" Width="80" Height="80" 
+                            Background="{StaticResource BackgroundLightBrush}"/>
+                </StackPanel>
+            </Border>
+            
+            <!-- Controls -->
+            <Border Background="{StaticResource BackgroundDarkBrush}" CornerRadius="5" 
+                    BorderBrush="{StaticResource SuccessGreenBrush}" BorderThickness="2" Padding="10" Margin="0,0,0,10">
+                <StackPanel>
+                    <TextBlock Text="Controls" FontSize="14" FontWeight="Bold" 
+                               HorizontalAlignment="Center" Foreground="White" Margin="0,0,0,5"/>
+                    <TextBlock Text="A/D or ←/→: Move" FontSize="11" Foreground="White" HorizontalAlignment="Center"/>
+                    <TextBlock Text="W or ↑: Rotate" FontSize="11" Foreground="White" HorizontalAlignment="Center"/>
+                    <TextBlock Text="S or ↓: Soft Drop" FontSize="11" Foreground="White" HorizontalAlignment="Center"/>
+                    <TextBlock Text="Space: Hard Drop" FontSize="11" Foreground="White" HorizontalAlignment="Center"/>
+                    <TextBlock Text="P: Pause" FontSize="11" Foreground="White" HorizontalAlignment="Center"/>
+                </StackPanel>
+            </Border>
+            
+            <!-- Status -->
+            <TextBlock x:Name="StatusText" Text="Press any key to start!" 
+                       FontSize="12" FontWeight="Bold" TextAlignment="Center" 
+                       Foreground="{StaticResource AccentOrangeBrush}" Margin="0,10,0,20" TextWrapping="Wrap"/>
+            
+            <!-- Buttons -->
+            <Button Content="New Game" Style="{StaticResource SuccessButtonStyle}" 
+                    Click="NewGame_Click" Margin="0,5"/>
+            <Button Content="Pause/Resume" Style="{StaticResource WarningButtonStyle}" 
+                    Click="PauseResume_Click" Margin="0,5"/>
+            <Button Content="Back to Menu" Style="{StaticResource SecondaryButtonStyle}" 
+                    Click="BackToMenu_Click" Margin="0,5"/>
+        </StackPanel>
+    </Grid>
+</Window>
