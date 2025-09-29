@@ -1,1 +1,94 @@
-<Window x:Class="GameBox.Games.SimonGame" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"></Window>
+<Window x:Class="GameBox.Games.SimonGame" 
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" 
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Simon Says Game" Height="600" Width="600" 
+        WindowStartupLocation="CenterScreen"
+        Background="{StaticResource BackgroundLightBrush}"
+        Closed="Window_Closed">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+        
+        <!-- Header -->
+        <Border Grid.Row="0" Background="{StaticResource PrimaryGradient}" Padding="15">
+            <StackPanel>
+                <TextBlock Text="🎵 SIMON SAYS" FontSize="24" FontWeight="Bold" 
+                           HorizontalAlignment="Center" Foreground="White"/>
+                <TextBlock x:Name="ScoreText" Text="Round: 1" FontSize="16" 
+                           HorizontalAlignment="Center" Foreground="White" Margin="0,5,0,0"/>
+                <TextBlock x:Name="StatusText" Text="Watch the sequence!" FontSize="14" 
+                           HorizontalAlignment="Center" Foreground="White" FontWeight="Bold"/>
+            </StackPanel>
+        </Border>
+        
+        <!-- Game Board -->
+        <Grid Grid.Row="1" Margin="20">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="20"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="20"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+            
+            <!-- Red Button (Top Left) -->
+            <Button x:Name="RedButton" Grid.Row="0" Grid.Column="0" 
+                    Background="Red" BorderBrush="DarkRed" BorderThickness="4"
+                    Click="ColorButton_Click" Tag="0"
+                    MouseDown="ColorButton_MouseDown" MouseUp="ColorButton_MouseUp">
+                <TextBlock Text="🔴" FontSize="48" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+            </Button>
+            
+            <!-- Green Button (Top Right) -->
+            <Button x:Name="GreenButton" Grid.Row="0" Grid.Column="2" 
+                    Background="Green" BorderBrush="DarkGreen" BorderThickness="4"
+                    Click="ColorButton_Click" Tag="1"
+                    MouseDown="ColorButton_MouseDown" MouseUp="ColorButton_MouseUp">
+                <TextBlock Text="🟢" FontSize="48" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+            </Button>
+            
+            <!-- Blue Button (Bottom Left) -->
+            <Button x:Name="BlueButton" Grid.Row="2" Grid.Column="0" 
+                    Background="Blue" BorderBrush="DarkBlue" BorderThickness="4"
+                    Click="ColorButton_Click" Tag="2"
+                    MouseDown="ColorButton_MouseDown" MouseUp="ColorButton_MouseUp">
+                <TextBlock Text="🔵" FontSize="48" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+            </Button>
+            
+            <!-- Yellow Button (Bottom Right) -->
+            <Button x:Name="YellowButton" Grid.Row="2" Grid.Column="2" 
+                    Background="Yellow" BorderBrush="Orange" BorderThickness="4"
+                    Click="ColorButton_Click" Tag="3"
+                    MouseDown="ColorButton_MouseDown" MouseUp="ColorButton_MouseUp">
+                <TextBlock Text="🟡" FontSize="48" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+            </Button>
+            
+            <!-- Center Info -->
+            <Border Grid.Row="1" Grid.Column="1" Background="{StaticResource BackgroundDarkBrush}" 
+                    CornerRadius="10" Padding="10">
+                <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                    <TextBlock x:Name="SequenceLengthText" Text="Length: 1" FontSize="12" 
+                               Foreground="White" HorizontalAlignment="Center"/>
+                    <TextBlock x:Name="BestScoreText" Text="Best: 0" FontSize="10" 
+                               Foreground="{StaticResource AccentOrangeBrush}" HorizontalAlignment="Center"/>
+                </StackPanel>
+            </Border>
+        </Grid>
+        
+        <!-- Controls -->
+        <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Center" Margin="20">
+            <Button Content="New Game" Style="{StaticResource SuccessButtonStyle}" 
+                    Click="NewGame_Click" Margin="5"/>
+            <Button Content="Replay Sequence" Style="{StaticResource WarningButtonStyle}" 
+                    Click="ReplaySequence_Click" Margin="5" x:Name="ReplayButton"/>
+            <Button Content="Back to Menu" Style="{StaticResource SecondaryButtonStyle}" 
+                    Click="BackToMenu_Click" Margin="5"/>
+        </StackPanel>
+    </Grid>
+</Window>

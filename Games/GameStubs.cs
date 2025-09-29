@@ -45,45 +45,4 @@ namespace GameBox.Games
         }
     }
 
-    public partial class SimonGame : Window
-    {
-        public SimonGame() 
-        { 
-            InitializeComponent();
-            Title = "Simon Says Game";
-            Width = 500;
-            Height = 500;
-            WindowStartupLocation = WindowStartupLocation.CenterScreen;
-            Content = new System.Windows.Controls.TextBlock 
-            { 
-                Text = "🎵 Simon Says Game\n\nComing Soon!\n\nRepeat the sequence of colors and sounds.", 
-                FontSize = 18, 
-                HorizontalAlignment = HorizontalAlignment.Center, 
-                VerticalAlignment = VerticalAlignment.Center,
-                TextAlignment = TextAlignment.Center,
-                Margin = new Thickness(20)
-            };
-        }
-    }
-
-    public partial class Game2048 : Window
-    {
-        public Game2048() 
-        { 
-            InitializeComponent();
-            Title = "2048 Game";
-            Width = 500;
-            Height = 600;
-            WindowStartupLocation = WindowStartupLocation.CenterScreen;
-            Content = new System.Windows.Controls.TextBlock 
-            { 
-                Text = "🔢 2048 Game\n\nComing Soon!\n\nCombine numbered tiles to reach 2048.", 
-                FontSize = 18, 
-                HorizontalAlignment = HorizontalAlignment.Center, 
-                VerticalAlignment = VerticalAlignment.Center,
-                TextAlignment = TextAlignment.Center,
-                Margin = new Thickness(20)
-            };
-        }
-    }
 }
