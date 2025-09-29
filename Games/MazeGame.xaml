@@ -1,1 +1,82 @@
-<Window x:Class="GameBox.Games.MazeGame" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"></Window>
+<Window x:Class="GameBox.Games.MazeGame" 
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" 
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Maze Runner Game" Height="650" Width="700" 
+        WindowStartupLocation="CenterScreen"
+        Background="{StaticResource BackgroundLightBrush}"
+        KeyDown="Window_KeyDown"
+        Focusable="True"
+        Closed="Window_Closed">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+        
+        <!-- Header -->
+        <Border Grid.Row="0" Background="{StaticResource PrimaryGradient}" Padding="15">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                
+                <StackPanel Grid.Column="0" VerticalAlignment="Center">
+                    <TextBlock Text="🌀 MAZE RUNNER" FontSize="24" FontWeight="Bold" Foreground="White"/>
+                    <TextBlock Text="Find your way through the maze!" FontSize="12" Foreground="White" Opacity="0.8"/>
+                </StackPanel>
+                
+                <StackPanel Grid.Column="1" Orientation="Horizontal" Margin="20,0,0,0">
+                    <StackPanel Margin="10,0">
+                        <TextBlock Text="Level" FontSize="10" Foreground="White" HorizontalAlignment="Center"/>
+                        <TextBlock x:Name="LevelText" Text="1" FontSize="16" FontWeight="Bold" 
+                                   Foreground="{StaticResource AccentOrangeBrush}" HorizontalAlignment="Center"/>
+                    </StackPanel>
+                    <StackPanel Margin="10,0">
+                        <TextBlock Text="Time" FontSize="10" Foreground="White" HorizontalAlignment="Center"/>
+                        <TextBlock x:Name="TimeText" Text="0:00" FontSize="16" FontWeight="Bold" 
+                                   Foreground="{StaticResource SuccessGreenBrush}" HorizontalAlignment="Center"/>
+                    </StackPanel>
+                    <StackPanel Margin="10,0">
+                        <TextBlock Text="Best" FontSize="10" Foreground="White" HorizontalAlignment="Center"/>
+                        <TextBlock x:Name="BestTimeText" Text="--:--" FontSize="16" FontWeight="Bold" 
+                                   Foreground="White" HorizontalAlignment="Center"/>
+                    </StackPanel>
+                </StackPanel>
+            </Grid>
+        </Border>
+        
+        <!-- Game Canvas -->
+        <Border Grid.Row="1" Background="{StaticResource BackgroundDarkBrush}" 
+                BorderBrush="{StaticResource PrimaryBlueBrush}" BorderThickness="3" 
+                Margin="20" CornerRadius="5">
+            <Canvas x:Name="GameCanvas" ClipToBounds="True"/>
+        </Border>
+        
+        <!-- Controls -->
+        <StackPanel Grid.Row="2" Orientation="Vertical" Margin="20">
+            <TextBlock x:Name="StatusText" Text="Use arrow keys or WASD to navigate through the maze!" 
+                       FontSize="14" FontWeight="Bold" HorizontalAlignment="Center" 
+                       Foreground="{StaticResource TextDarkBrush}" Margin="0,0,0,10" TextWrapping="Wrap"/>
+            
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                
+                <Button Grid.Column="0" Content="New Maze" Style="{StaticResource SuccessButtonStyle}" 
+                        Click="NewMaze_Click" Margin="5"/>
+                <Button Grid.Column="1" Content="Show Solution" Style="{StaticResource WarningButtonStyle}" 
+                        Click="ShowSolution_Click" Margin="5" x:Name="SolutionButton"/>
+                <Button Grid.Column="2" Content="Reset Position" Style="{StaticResource PrimaryButtonStyle}" 
+                        Click="ResetPosition_Click" Margin="5"/>
+                <Button Grid.Column="3" Content="Back to Menu" Style="{StaticResource SecondaryButtonStyle}" 
+                        Click="BackToMenu_Click" Margin="5"/>
+            </Grid>
+        </StackPanel>
+    </Grid>
+</Window>
