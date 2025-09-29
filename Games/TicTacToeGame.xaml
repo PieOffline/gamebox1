@@ -1,1 +1,83 @@
-<Window x:Class="GameBox.Games.TicTacToeGame" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"></Window>
+<Window x:Class="GameBox.Games.TicTacToeGame"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:GameBox.Games"
+        mc:Ignorable="d"
+        Title="Tic-Tac-Toe Online" Height="650" Width="500"
+        WindowStartupLocation="CenterScreen"
+        Closed="Window_Closed"
+        Background="{StaticResource BackgroundLightBrush}">
+    
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <!-- Header -->
+        <Border Grid.Row="0" Background="{StaticResource PrimaryGradient}" Padding="15">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                
+                <StackPanel Grid.Column="0" Orientation="Vertical">
+                    <TextBlock Text="⭕ Tic-Tac-Toe Online" FontSize="20" FontWeight="Bold" 
+                               Foreground="{StaticResource TextLightBrush}"/>
+                    <TextBlock x:Name="StatusText" Text="Connecting..." 
+                               FontSize="14" Foreground="{StaticResource TextLightBrush}" Opacity="0.9"/>
+                </StackPanel>
+                
+                <StackPanel Grid.Column="1" Orientation="Horizontal">
+                    <Button Content="New Game" Style="{StaticResource MenuButtonStyle}" 
+                            Click="NewGame_Click" Margin="5"/>
+                    <Button Content="Back to Menu" Style="{StaticResource DangerButtonStyle}" 
+                            Click="BackToMenu_Click" Margin="5"/>
+                </StackPanel>
+            </Grid>
+        </Border>
+
+        <!-- Game Board -->
+        <Border Grid.Row="1" Background="White" Margin="20" 
+                BorderBrush="{StaticResource PrimaryBlueBrush}" BorderThickness="3"
+                CornerRadius="10">
+            <Viewbox Stretch="Uniform" Margin="20">
+                <Grid x:Name="GameGrid" Width="300" Height="300">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                </Grid>
+            </Viewbox>
+        </Border>
+
+        <!-- Game Info -->
+        <Border Grid.Row="2" Background="{StaticResource AccentGradient}" Padding="15">
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                <TextBlock Text="🎮 " FontSize="16" Foreground="{StaticResource TextLightBrush}"/>
+                <TextBlock Text="Click on empty squares to make your move!" 
+                           FontSize="14" FontWeight="SemiBold"
+                           Foreground="{StaticResource TextLightBrush}"/>
+            </StackPanel>
+        </Border>
+
+        <!-- Instructions -->
+        <Border Grid.Row="3" Background="{StaticResource BackgroundDarkBrush}" Padding="10">
+            <TextBlock Text="First player to get 3 in a row (horizontally, vertically, or diagonally) wins! 🏆" 
+                       FontSize="12" Foreground="{StaticResource TextLightBrush}" 
+                       HorizontalAlignment="Center"/>
+        </Border>
+        
+    </Grid>
+</Window>

@@ -3,27 +3,6 @@ using System.Windows;
 namespace GameBox.Games
 {
     // Placeholder stub classes for remaining single-player games
-    public partial class SnakeGame : Window
-    {
-        public SnakeGame() 
-        { 
-            InitializeComponent();
-            Title = "Snake Game";
-            Width = 600;
-            Height = 600;
-            WindowStartupLocation = WindowStartupLocation.CenterScreen;
-            Content = new System.Windows.Controls.TextBlock 
-            { 
-                Text = "🐍 Snake Game\n\nComing Soon!\n\nThis will be the classic Snake game where you eat food to grow longer.", 
-                FontSize = 18, 
-                HorizontalAlignment = HorizontalAlignment.Center, 
-                VerticalAlignment = VerticalAlignment.Center,
-                TextAlignment = TextAlignment.Center,
-                Margin = new Thickness(20)
-            };
-        }
-    }
-
     public partial class TetrisGame : Window
     {
         public TetrisGame() 
