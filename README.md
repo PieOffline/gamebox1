@@ -30,7 +30,8 @@ Each player gets a unique **fruit code** based on their IP address:
 - IP ending in .1 = "Apple"
 - IP ending in .2 = "Blackberry"
 - IP ending in .3 = "Carrot"
-- And so on...
+- And so on... (supports full range 1-255)
+- IP ending in .255 = "UncleSam"
 
 To play multiplayer games:
 1. Player 1 (host) clicks on a multiplayer game
