@@ -8,7 +8,6 @@
         Title="GameBox - Collection of Fun Mini Games" 
         Height="750" Width="1200" 
         WindowStartupLocation="CenterScreen"
-        Background="{StaticResource BackgroundLightBrush}"
         ResizeMode="CanMinimize">
     
     <Grid>

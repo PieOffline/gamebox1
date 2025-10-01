@@ -11,26 +11,32 @@ namespace GameBox.Utils
 
         public static ScoreManager Instance => _instance ??= new ScoreManager();
 
-        public int MultiplayerWins 
-        { 
-            get => _multiplayerWins; 
-            private set 
-            { 
-                _multiplayerWins = value; 
-                OnPropertyChanged(nameof(MultiplayerWins));
-                OnPropertyChanged(nameof(WinPercentage));
-            } 
+        public int MultiplayerWins
+        {
+            get => _multiplayerWins;
+            private set
+            {
+                if (_multiplayerWins != value)
+                {
+                    _multiplayerWins = value;
+                    OnPropertyChanged(nameof(MultiplayerWins));
+                    OnPropertyChanged(nameof(WinPercentage));
+                }
+            }
         }
 
-        public int GamesPlayed 
-        { 
-            get => _gamesPlayed; 
-            private set 
-            { 
-                _gamesPlayed = value; 
-                OnPropertyChanged(nameof(GamesPlayed));
-                OnPropertyChanged(nameof(WinPercentage));
-            } 
+        public int GamesPlayed
+        {
+            get => _gamesPlayed;
+            private set
+            {
+                if (_gamesPlayed != value)
+                {
+                    _gamesPlayed = value;
+                    OnPropertyChanged(nameof(GamesPlayed));
+                    OnPropertyChanged(nameof(WinPercentage));
+                }
+            }
         }
 
         public double WinPercentage => GamesPlayed > 0 ? (double)MultiplayerWins / GamesPlayed * 100 : 0;
