@@ -46,7 +46,7 @@
                     <TextBlock Text="Multiplayer Record:" FontSize="12" 
                                Foreground="{StaticResource TextLightBrush}" Opacity="0.8"/>
                     <TextBlock FontSize="16" FontWeight="Bold" Foreground="{StaticResource SuccessGreenBrush}">
-                        <Run Text="{Binding ScoreManagerInstance.MultiplayerWins, Mode=OneWay}"/>
+                        <Run Text="{Binding ScoreManagerInstance.MultiplayerWins}"/>
                         <Run Text="/" Foreground="{StaticResource TextLightBrush}"/>
                         <Run Text="{Binding ScoreManagerInstance.GamesPlayed, Mode=OneWay}"/>
                     </TextBlock>
