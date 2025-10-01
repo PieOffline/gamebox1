@@ -8,7 +8,6 @@
         Title="GameBox - Collection of Fun Mini Games" 
         Height="750" Width="1200" 
         WindowStartupLocation="CenterScreen"
-        Background="{StaticResource BackgroundLightBrush}"
         ResizeMode="CanMinimize">
     
     <Grid>
@@ -47,6 +46,7 @@
                     <TextBlock Text="Multiplayer Record:" FontSize="12" 
                                Foreground="{StaticResource TextLightBrush}" Opacity="0.8"/>
                     <TextBlock FontSize="16" FontWeight="Bold" Foreground="{StaticResource SuccessGreenBrush}">
+                        <!-- FIXED: No Mode=TwoWay -->
                         <Run Text="{Binding ScoreManagerInstance.MultiplayerWins}"/>
                         <Run Text="/" Foreground="{StaticResource TextLightBrush}"/>
                         <Run Text="{Binding ScoreManagerInstance.GamesPlayed}"/>
