@@ -46,12 +46,12 @@
                     <TextBlock Text="Multiplayer Record:" FontSize="12" 
                                Foreground="{StaticResource TextLightBrush}" Opacity="0.8"/>
                     <TextBlock FontSize="16" FontWeight="Bold" Foreground="{StaticResource SuccessGreenBrush}">
-                        <Run Text="{Binding ScoreManagerInstance.MultiplayerWins}"/>
+                        <Run Text="{Binding ScoreManagerInstance.MultiplayerWins, Mode=OneWay}"/>
                         <Run Text="/" Foreground="{StaticResource TextLightBrush}"/>
-                        <Run Text="{Binding ScoreManagerInstance.GamesPlayed}"/>
+                        <Run Text="{Binding ScoreManagerInstance.GamesPlayed, Mode=OneWay}"/>
                     </TextBlock>
                     <TextBlock FontSize="12" Foreground="{StaticResource TextLightBrush}" Opacity="0.8">
-                        <Run Text="{Binding ScoreManagerInstance.WinPercentage, StringFormat=F1}"/>
+                        <Run Text="{Binding ScoreManagerInstance.WinPercentage, StringFormat=F1, Mode=OneWay}"/>
                         <Run Text="%"/>
                     </TextBlock>
                 </StackPanel>

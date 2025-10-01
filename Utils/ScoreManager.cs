@@ -43,13 +43,13 @@ namespace GameBox.Utils
 
         public void RecordWin()
         {
-            MultiplayerWins++;
-            GamesPlayed++;
+            MultiplayerWins = MultiplayerWins + 1;
+            GamesPlayed = GamesPlayed + 1;
         }
 
         public void RecordLoss()
         {
-            GamesPlayed++;
+            GamesPlayed = GamesPlayed + 1;
         }
 
         public void Reset()

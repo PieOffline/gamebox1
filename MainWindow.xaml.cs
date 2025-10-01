@@ -25,7 +25,7 @@ public partial class MainWindow : Window
         LocalIpAddress = localIp;
     }
 
-    public ScoreManager ScoreManagerInstance { get; }
+    public ScoreManager ScoreManagerInstance { get; set; }
     public string UserFruitCode { get; }
     public string LocalIpAddress { get; }
 
