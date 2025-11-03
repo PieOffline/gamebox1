@@ -101,9 +101,8 @@ namespace GameBox.Games
             
             cell.TextChanged += (s, e) =>
             {
-                if (cell.Text.Length > 0)
+                if (cell.Text.Length > 0 && int.TryParse(cell.Text, out int value))
                 {
-                    int value = int.Parse(cell.Text);
                     if (IsValidMove(row, col, value))
                     {
                         cell.Background = new SolidColorBrush(Color.FromRgb(200, 255, 200));

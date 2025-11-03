@@ -116,8 +116,9 @@ namespace GameBox.Utils
                 };
 
                 var requestJson = JsonSerializer.Serialize(request);
-                var requestBytes = Encoding.UTF8.GetBytes(requestJson + "\n");
+                var requestBytes = Encoding.UTF8.GetBytes(requestJson);
                 await stream.WriteAsync(requestBytes, 0, requestBytes.Length);
+                await stream.WriteAsync(new byte[] { (byte)'\n' }, 0, 1);
 
                 // Wait for response with timeout
                 var buffer = new byte[1024];
@@ -173,8 +174,18 @@ namespace GameBox.Utils
 
                     var client = await requestListener.AcceptTcpClientAsync();
                     
-                    // Handle request in background
-                    _ = Task.Run(() => HandleGameRequestAsync(client));
+                    // Handle request in background with error handling
+                    _ = Task.Run(async () =>
+                    {
+                        try
+                        {
+                            await HandleGameRequestAsync(client);
+                        }
+                        catch (Exception ex)
+                        {
+                            System.Diagnostics.Debug.WriteLine($"Unhandled error in HandleGameRequestAsync: {ex.Message}");
+                        }
+                    });
                 }
                 catch (Exception ex)
                 {
@@ -222,7 +233,9 @@ namespace GameBox.Utils
                             // Notify UI thread about the request and wait for user response
                             var tcs = new TaskCompletionSource<GameRequestResponse>();
                             
-                            Application.Current.Dispatcher.Invoke(() =>
+                            // Use BeginInvoke to avoid potential deadlocks
+                            // Warning CS4014 suppressed: we handle result via TaskCompletionSource
+                            _ = Application.Current.Dispatcher.BeginInvoke(() =>
                             {
                                 try
                                 {
@@ -266,8 +279,9 @@ namespace GameBox.Utils
         private async Task SendResponseAsync(NetworkStream stream, GameRequestResponse response)
         {
             var responseJson = JsonSerializer.Serialize(response);
-            var responseBytes = Encoding.UTF8.GetBytes(responseJson + "\n");
+            var responseBytes = Encoding.UTF8.GetBytes(responseJson);
             await stream.WriteAsync(responseBytes, 0, responseBytes.Length);
+            await stream.WriteAsync(new byte[] { (byte)'\n' }, 0, 1);
             await stream.FlushAsync();
         }
 

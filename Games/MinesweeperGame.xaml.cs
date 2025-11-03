@@ -243,16 +243,17 @@ namespace GameBox.Games
 
         private Brush GetNumberColor(int number)
         {
+            // Using standard Minesweeper colors - these are game-specific, not theme colors
             return number switch
             {
-                1 => Brushes.Blue,
-                2 => Brushes.Green,
-                3 => Brushes.Red,
-                4 => Brushes.DarkBlue,
-                5 => Brushes.DarkRed,
-                6 => Brushes.Cyan,
-                7 => Brushes.Black,
-                8 => Brushes.Gray,
+                1 => Brushes.Blue,       // Standard minesweeper color for 1
+                2 => Brushes.Green,      // Standard minesweeper color for 2
+                3 => Brushes.Red,        // Standard minesweeper color for 3
+                4 => Brushes.DarkBlue,   // Standard minesweeper color for 4
+                5 => Brushes.DarkRed,    // Standard minesweeper color for 5
+                6 => Brushes.Cyan,       // Standard minesweeper color for 6
+                7 => Brushes.Black,      // Standard minesweeper color for 7
+                8 => Brushes.Gray,       // Standard minesweeper color for 8
                 _ => Brushes.Black
             };
         }

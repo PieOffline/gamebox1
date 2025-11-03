@@ -77,10 +77,12 @@ namespace GameBox
                 }
                 
                 // When game window closes, mark as not in game
-                gameWindow.Closed += (s, args) =>
+                void OnGameClosed(object? s, EventArgs args)
                 {
                     networkManager.SetInGameStatus(false);
-                };
+                    gameWindow.Closed -= OnGameClosed; // Detach to prevent memory leak
+                }
+                gameWindow.Closed += OnGameClosed;
                 
                 gameWindow.Show();
                 this.Close();
