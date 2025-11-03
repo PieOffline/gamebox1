@@ -5,10 +5,9 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:GameBox"
         mc:Ignorable="d"
-        Title="Connect to Opponent" Height="350" Width="500"
+        Title="Connect to Opponent" Height="500" Width="500"
         WindowStartupLocation="CenterOwner"
-        Background="{StaticResource BackgroundLightBrush}"
-        ResizeMode="NoResize">
+        Background="{StaticResource BackgroundLightBrush}">
     
     <Grid Margin="30">
         <Grid.RowDefinitions>
