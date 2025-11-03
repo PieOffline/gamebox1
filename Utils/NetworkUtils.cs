@@ -224,7 +224,7 @@ namespace GameBox.Utils
             { 211, "Caramel" },
             { 212, "Danish" },
             { 213, "Empanada" },
-            { 214, "Flambé" },
+            { 214, "Flambï¿½" },
             { 215, "Galette" },
             { 216, "Hamantash" },
             { 217, "IcePick" },
@@ -251,7 +251,7 @@ namespace GameBox.Utils
             { 238, "Dumpling" },
             { 239, "ElephantEar" },
             { 240, "Fruitcake" },
-            { 241, "Gâteau" },
+            { 241, "Gï¿½teau" },
             { 242, "Honeybun" },
             { 243, "IceCreamCake" },
             { 244, "Jelly" },
@@ -333,6 +333,81 @@ namespace GameBox.Utils
         public static int FruitCodeToLastOctet(string fruitCode)
         {
             return FruitToIp.GetValueOrDefault(fruitCode.ToLower(), -1);
+        }
+
+        /// <summary>
+        /// Parses custom IP format (e.g., 20.Apple for x.x.x.20.1, 5.102.Coffee for x.x.5.102.3, 1.1.1.Apple for 1.1.1.1)
+        /// Returns the full IP address or empty string if invalid
+        /// </summary>
+        public static string ParseCustomIpFormat(string customFormat)
+        {
+            if (string.IsNullOrWhiteSpace(customFormat))
+                return string.Empty;
+
+            var parts = customFormat.Split('.');
+            
+            if (parts.Length == 0)
+                return string.Empty;
+
+            // Case 1: Single fruit code (e.g., "Apple") - use default network base
+            if (parts.Length == 1)
+            {
+                return FruitCodeToIp(parts[0]);
+            }
+            
+            // Case 2: Two parts (e.g., "20.Apple" means x.x.x.20.1)
+            if (parts.Length == 2)
+            {
+                if (int.TryParse(parts[0], out int thirdOctet))
+                {
+                    int lastOctet = FruitCodeToLastOctet(parts[1]);
+                    if (lastOctet == -1) return string.Empty;
+                    
+                    var networkBase = GetNetworkBase();
+                    var baseParts = networkBase.Split('.');
+                    if (baseParts.Length >= 2)
+                    {
+                        return $"{baseParts[0]}.{baseParts[1]}.{thirdOctet}.{lastOctet}";
+                    }
+                }
+                return string.Empty;
+            }
+            
+            // Case 3: Three parts (e.g., "5.102.Coffee" means x.5.102.3)
+            if (parts.Length == 3)
+            {
+                if (int.TryParse(parts[0], out int secondOctet) && 
+                    int.TryParse(parts[1], out int thirdOctet))
+                {
+                    int lastOctet = FruitCodeToLastOctet(parts[2]);
+                    if (lastOctet == -1) return string.Empty;
+                    
+                    var networkBase = GetNetworkBase();
+                    var baseParts = networkBase.Split('.');
+                    if (baseParts.Length >= 1)
+                    {
+                        return $"{baseParts[0]}.{secondOctet}.{thirdOctet}.{lastOctet}";
+                    }
+                }
+                return string.Empty;
+            }
+            
+            // Case 4: Four parts (e.g., "1.1.1.Apple" means 1.1.1.1)
+            if (parts.Length == 4)
+            {
+                if (int.TryParse(parts[0], out int firstOctet) && 
+                    int.TryParse(parts[1], out int secondOctet) && 
+                    int.TryParse(parts[2], out int thirdOctet))
+                {
+                    int lastOctet = FruitCodeToLastOctet(parts[3]);
+                    if (lastOctet == -1) return string.Empty;
+                    
+                    return $"{firstOctet}.{secondOctet}.{thirdOctet}.{lastOctet}";
+                }
+                return string.Empty;
+            }
+            
+            return string.Empty;
         }
 
         /// <summary>

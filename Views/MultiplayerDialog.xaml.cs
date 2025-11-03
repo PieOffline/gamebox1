@@ -38,16 +38,22 @@ namespace GameBox
 
             try
             {
-                var opponentIp = NetworkUtils.FruitCodeToIp(opponentCode);
+                // First try parsing as custom format (supports 20.Apple, 5.102.Coffee, 1.1.1.Apple, etc.)
+                var opponentIp = NetworkUtils.ParseCustomIpFormat(opponentCode);
                 
                 if (string.IsNullOrEmpty(opponentIp))
                 {
-                    MessageBox.Show($"Invalid fruit code: {opponentCode}", "Invalid Code", 
-                        MessageBoxButton.OK, MessageBoxImage.Error);
+                    MessageBox.Show($"Invalid fruit code or IP format: {opponentCode}\n\n" +
+                                  "Valid formats:\n" +
+                                  "  - Fruit code (e.g., Apple)\n" +
+                                  "  - Last two octets (e.g., 20.Apple for x.x.x.20.1)\n" +
+                                  "  - Last three octets (e.g., 5.102.Coffee for x.5.102.3)\n" +
+                                  "  - Full IP (e.g., 1.1.1.Apple for 1.1.1.1)", 
+                        "Invalid Code", MessageBoxButton.OK, MessageBoxImage.Error);
                     return;
                 }
 
-                StatusText.Text = $"Sending request to {opponentCode}...";
+                StatusText.Text = $"Sending request to {opponentCode} ({opponentIp})...";
                 
                 // Send game request using new network manager
                 var networkManager = NetworkManager.Instance;
@@ -98,6 +104,44 @@ namespace GameBox
                 ConnectButton.IsEnabled = true;
                 ConnectButton.Content = "Connect & Play";
                 StatusText.Text = "";
+            }
+        }
+
+        private void LocalMultiplayer_Click(object sender, RoutedEventArgs e)
+        {
+            // For local multiplayer (testing), use localhost
+            try
+            {
+                StatusText.Text = "Starting local multiplayer game...";
+                
+                // Mark as in-game
+                var networkManager = NetworkManager.Instance;
+                networkManager.SetInGameStatus(true, _gameName);
+                
+                // Create and show the game window
+                var gameWindow = _gameFactory();
+                
+                // If the game supports multiplayer, pass localhost
+                if (gameWindow is IMultiplayerGame multiplayerGame)
+                {
+                    multiplayerGame.SetOpponent("127.0.0.1", isHost: true);
+                }
+                
+                // When game window closes, mark as not in game
+                void OnGameClosed(object? s, EventArgs args)
+                {
+                    networkManager.SetInGameStatus(false);
+                    gameWindow.Closed -= OnGameClosed;
+                }
+                gameWindow.Closed += OnGameClosed;
+                
+                gameWindow.Show();
+                this.Close();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"An error occurred: {ex.Message}", "Error", 
+                    MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
 

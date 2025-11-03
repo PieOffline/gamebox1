@@ -1,0 +1,182 @@
+<Window x:Class="GameBox.Views.DeveloperMenu"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d"
+        Title="Developer Menu" Height="600" Width="800"
+        WindowStartupLocation="CenterScreen"
+        Background="{StaticResource BackgroundLightBrush}">
+    
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <!-- Header -->
+        <Border Grid.Row="0" Background="{StaticResource PrimaryGradient}" Padding="20">
+            <StackPanel Orientation="Vertical">
+                <TextBlock Text="🔧 Developer Menu" FontSize="24" FontWeight="Bold" 
+                           Foreground="{StaticResource TextLightBrush}"/>
+                <TextBlock Text="Advanced debugging and monitoring tools" FontSize="14" 
+                           Foreground="{StaticResource TextLightBrush}" Opacity="0.8"/>
+            </StackPanel>
+        </Border>
+
+        <!-- Content Tabs -->
+        <TabControl Grid.Row="1" Margin="10" Background="White">
+            <!-- Online Players Tab -->
+            <TabItem Header="Online Players">
+                <Grid Margin="10">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+                    
+                    <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,10">
+                        <Button Content="🔄 Refresh" Style="{StaticResource MenuButtonStyle}" 
+                                Click="RefreshOnlinePlayers_Click" Margin="0,0,10,0"/>
+                        <TextBlock Text="Scanning network for active players..." 
+                                   VerticalAlignment="Center" FontSize="12" 
+                                   Foreground="{StaticResource TextDarkBrush}" Opacity="0.7"/>
+                    </StackPanel>
+                    
+                    <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+                        <ItemsControl x:Name="OnlinePlayersList">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Border Background="White" BorderBrush="{StaticResource PrimaryBlueBrush}" 
+                                            BorderThickness="1" Padding="10" Margin="0,0,0,5" CornerRadius="5">
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="Auto"/>
+                                                <ColumnDefinition Width="*"/>
+                                                <ColumnDefinition Width="Auto"/>
+                                            </Grid.ColumnDefinitions>
+                                            
+                                            <Ellipse Grid.Column="0" Width="10" Height="10" 
+                                                     Fill="{StaticResource SuccessGreenBrush}" Margin="0,0,10,0"/>
+                                            <StackPanel Grid.Column="1">
+                                                <TextBlock Text="{Binding FruitCode}" FontSize="16" FontWeight="Bold" 
+                                                           Foreground="{StaticResource PrimaryBlueBrush}"/>
+                                                <TextBlock Text="{Binding IpAddress}" FontSize="12" 
+                                                           Foreground="{StaticResource TextDarkBrush}" Opacity="0.7"/>
+                                            </StackPanel>
+                                            <TextBlock Grid.Column="2" Text="{Binding Status}" FontSize="12" 
+                                                       Foreground="{StaticResource AccentOrangeBrush}" 
+                                                       VerticalAlignment="Center"/>
+                                        </Grid>
+                                    </Border>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </ScrollViewer>
+                </Grid>
+            </TabItem>
+
+            <!-- Player Stats Tab -->
+            <TabItem Header="Player Stats">
+                <Grid Margin="10">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+                    
+                    <TextBlock Grid.Row="0" Text="Current Session Statistics" FontSize="18" 
+                               FontWeight="Bold" Foreground="{StaticResource PrimaryBlueBrush}" 
+                               Margin="0,0,0,20"/>
+                    
+                    <StackPanel Grid.Row="1" Orientation="Vertical">
+                        <Border Background="White" BorderBrush="{StaticResource PrimaryBlueBrush}" 
+                                BorderThickness="2" Padding="20" Margin="0,0,0,10" CornerRadius="10">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                
+                                <StackPanel Grid.Column="0" HorizontalAlignment="Center">
+                                    <TextBlock Text="Total Games" FontSize="14" 
+                                               Foreground="{StaticResource TextDarkBrush}" Opacity="0.7"/>
+                                    <TextBlock x:Name="TotalGamesText" Text="0" FontSize="36" FontWeight="Bold" 
+                                               Foreground="{StaticResource PrimaryBlueBrush}"/>
+                                </StackPanel>
+                                
+                                <StackPanel Grid.Column="1" HorizontalAlignment="Center">
+                                    <TextBlock Text="Wins" FontSize="14" 
+                                               Foreground="{StaticResource TextDarkBrush}" Opacity="0.7"/>
+                                    <TextBlock x:Name="WinsText" Text="0" FontSize="36" FontWeight="Bold" 
+                                               Foreground="{StaticResource SuccessGreenBrush}"/>
+                                </StackPanel>
+                                
+                                <StackPanel Grid.Column="2" HorizontalAlignment="Center">
+                                    <TextBlock Text="Win Rate" FontSize="14" 
+                                               Foreground="{StaticResource TextDarkBrush}" Opacity="0.7"/>
+                                    <TextBlock x:Name="WinRateText" Text="0%" FontSize="36" FontWeight="Bold" 
+                                               Foreground="{StaticResource AccentOrangeBrush}"/>
+                                </StackPanel>
+                            </Grid>
+                        </Border>
+                    </StackPanel>
+                </Grid>
+            </TabItem>
+
+            <!-- Network Info Tab -->
+            <TabItem Header="Network Info">
+                <ScrollViewer VerticalScrollBarVisibility="Auto">
+                    <StackPanel Margin="10" Orientation="Vertical">
+                        <TextBlock Text="Network Configuration" FontSize="18" FontWeight="Bold" 
+                                   Foreground="{StaticResource PrimaryBlueBrush}" Margin="0,0,0,20"/>
+                        
+                        <Border Background="White" BorderBrush="{StaticResource PrimaryBlueBrush}" 
+                                BorderThickness="1" Padding="15" Margin="0,0,0,10" CornerRadius="5">
+                            <StackPanel>
+                                <TextBlock Text="Your IP Address:" FontSize="14" FontWeight="SemiBold" 
+                                           Foreground="{StaticResource TextDarkBrush}"/>
+                                <TextBlock x:Name="LocalIpText" FontSize="16" 
+                                           Foreground="{StaticResource PrimaryBlueBrush}" Margin="0,5,0,0"/>
+                            </StackPanel>
+                        </Border>
+                        
+                        <Border Background="White" BorderBrush="{StaticResource PrimaryBlueBrush}" 
+                                BorderThickness="1" Padding="15" Margin="0,0,0,10" CornerRadius="5">
+                            <StackPanel>
+                                <TextBlock Text="Your Fruit Code:" FontSize="14" FontWeight="SemiBold" 
+                                           Foreground="{StaticResource TextDarkBrush}"/>
+                                <TextBlock x:Name="FruitCodeText" FontSize="16" 
+                                           Foreground="{StaticResource AccentOrangeBrush}" Margin="0,5,0,0"/>
+                            </StackPanel>
+                        </Border>
+                        
+                        <Border Background="White" BorderBrush="{StaticResource PrimaryBlueBrush}" 
+                                BorderThickness="1" Padding="15" Margin="0,0,0,10" CornerRadius="5">
+                            <StackPanel>
+                                <TextBlock Text="Custom IP Format Examples:" FontSize="14" FontWeight="SemiBold" 
+                                           Foreground="{StaticResource TextDarkBrush}"/>
+                                <TextBlock FontSize="12" Foreground="{StaticResource TextDarkBrush}" 
+                                           Opacity="0.8" Margin="0,5,0,0" TextWrapping="Wrap">
+                                    <Run Text="• Apple" FontWeight="Bold"/> - Uses your local subnet (e.g., 192.168.0.1)
+                                    <LineBreak/>
+                                    <Run Text="• 20.Apple" FontWeight="Bold"/> - Specific third octet (e.g., 192.168.20.1)
+                                    <LineBreak/>
+                                    <Run Text="• 5.102.Coffee" FontWeight="Bold"/> - Specific second and third octets (e.g., 192.5.102.3)
+                                    <LineBreak/>
+                                    <Run Text="• 1.1.1.Apple" FontWeight="Bold"/> - Full IP specification (e.g., 1.1.1.1)
+                                </TextBlock>
+                            </StackPanel>
+                        </Border>
+                    </StackPanel>
+                </ScrollViewer>
+            </TabItem>
+        </TabControl>
+
+        <!-- Footer -->
+        <Border Grid.Row="2" Background="{StaticResource BackgroundDarkBrush}" Padding="15">
+            <Button Content="Close" Style="{StaticResource DangerButtonStyle}" 
+                    Click="Close_Click" HorizontalAlignment="Right"/>
+        </Border>
+    </Grid>
+</Window>

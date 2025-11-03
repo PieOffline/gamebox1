@@ -20,11 +20,11 @@ Welcome to GameBox! A collection of engaging single-player and multiplayer mini-
 - **🔢 Sudoku** - Number placement puzzle (Fully implemented)
 
 ### 🌐 LAN Multiplayer Games (5 games)
-- **⭕ Tic-Tac-Toe** - Classic online game (Coming soon)
-- **✂️ Rock Paper Scissors** - Play RPS online (Coming soon)
-- **♔ Checkers** - Board game online (Coming soon)
-- **🚗 Tank Battle** - Battle tanks online (Coming soon)
-- **🏁 Racing Game** - Race cars online (Coming soon)
+- **⭕ Tic-Tac-Toe** - Classic 3x3 grid game (Fully implemented)
+- **✂️ Rock Paper Scissors** - Classic hand game with scoring (Fully implemented)
+- **♔ Checkers** - Full 8x8 board with jumping and kings (Fully implemented)
+- **🚗 Tank Battle** - Real-time tank combat with shooting (Fully implemented)
+- **🏁 Racing Game** - Side-by-side racing to the finish line (Fully implemented)
 
 ### 🎮 Special Features
 
@@ -48,10 +48,26 @@ Each player gets a unique **fruit code** based on their IP address:
 - **Port 42420** - Game requests and notifications
 - **Port 42421** - Active game connections (keeps request port free)
 
+**Advanced IP Format (Developer Feature):**
+For connecting to players on different subnets, the system supports custom IP formats:
+- `Apple` - Standard format, uses your local subnet (e.g., 192.168.0.1)
+- `20.Apple` - Specifies third octet (e.g., 192.168.20.1)
+- `5.102.Coffee` - Specifies second and third octets (e.g., 192.5.102.3)
+- `1.1.1.Apple` - Full IP specification (e.g., 1.1.1.1)
+
+This allows cross-subnet multiplayer without requiring direct IP address entry.
+
 #### Local Scoreboard
 - Tracks multiplayer wins/losses during the current session
 - Shows win percentage
 - Volatile storage (resets when app closes)
+
+#### Developer Menu
+- Access via password-protected button on homepage (Password: `B3T4`)
+- View online players in real-time
+- Monitor network statistics
+- Track player stats and game history
+- Scan network for active players
 
 ## Getting Started
 
@@ -125,12 +141,17 @@ dotnet run
   - ♠️ **Solitaire** - Classic Klondike card game with drag-and-drop
   - 💣 **Minesweeper** - Mine-finding puzzle with flag placement
   - 🔢 **Sudoku** - Number placement puzzle with automatic validation
-- **5 Multiplayer Games**:
-  - ⭕ **Tic-Tac-Toe** - Full networking implementation
-  - ✂️ **Rock Paper Scissors** - Multiplayer ready (framework complete)
-  - ♔ **Checkers** - Multiplayer ready (framework complete)
-  - 🚗 **Tank Battle** - Multiplayer ready (framework complete)
-  - 🏁 **Racing Game** - Multiplayer ready (framework complete)
+- **All 5 Multiplayer Games Fully Implemented**:
+  - ⭕ **Tic-Tac-Toe** - Turn-based 3x3 grid with win detection
+  - ✂️ **Rock Paper Scissors** - Best-of series with round tracking
+  - ♔ **Checkers** - Full 8x8 board with capture mechanics and king promotion
+  - 🚗 **Tank Battle** - Real-time combat with movement, shooting, and health
+  - 🏁 **Racing Game** - Side-by-side racing with live position tracking
+- **Advanced Multiplayer Features**:
+  - Local multiplayer mode for testing on same machine
+  - Custom IP format for cross-subnet play (20.Apple, 5.102.Coffee, etc.)
+  - Online player detection and display on homepage
+  - Password-protected developer menu with network tools
 - Modern colorful UI with gradients and thoughtful design
 - Full keyboard controls and intuitive gameplay
 
