@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Net.NetworkInformation;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using GameBox.Utils;
@@ -46,11 +47,13 @@ namespace GameBox.Views
             var localIp = NetworkUtils.GetLocalIPAddress();
             
             // Scan common IP range (1-254) for players with GameBox app open
-            var tasks = new List<Task>();
-            var playersLock = new object();
-            
             await Task.Run(async () =>
             {
+                // Limit concurrent connections to avoid overwhelming the network
+                using var semaphore = new SemaphoreSlim(20);
+                var tasks = new List<Task>();
+                var playersLock = new object();
+                
                 for (int i = 1; i <= 254; i++)
                 {
                     var ip = $"{networkBase}.{i}";
@@ -60,6 +63,7 @@ namespace GameBox.Views
                     
                     var checkTask = Task.Run(async () =>
                     {
+                        await semaphore.WaitAsync();
                         try
                         {
                             // Check if GameBox app is running on this IP
@@ -82,6 +86,10 @@ namespace GameBox.Views
                             }
                         }
                         catch { }
+                        finally
+                        {
+                            semaphore.Release();
+                        }
                     });
                     
                     tasks.Add(checkTask);

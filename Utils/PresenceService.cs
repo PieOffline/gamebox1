@@ -13,8 +13,8 @@ namespace GameBox.Utils
     /// </summary>
     public class PresenceService
     {
-        private static PresenceService? _instance;
-        public static PresenceService Instance => _instance ??= new PresenceService();
+        private static readonly Lazy<PresenceService> _instance = new Lazy<PresenceService>(() => new PresenceService());
+        public static PresenceService Instance => _instance.Value;
 
         // Dedicated port for presence status
         private const int PresencePort = 42422;

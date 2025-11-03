@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Threading;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
@@ -271,7 +272,8 @@ public partial class MainWindow : Window
             var networkBase = NetworkUtils.GetNetworkBase();
             var localIp = NetworkUtils.GetLocalIPAddress();
             
-            // Check a wider range of IPs (up to 254)
+            // Limit concurrent connections to avoid overwhelming the network
+            using var semaphore = new SemaphoreSlim(20);
             var tasks = new List<System.Threading.Tasks.Task>();
             var playersLock = new object();
             
@@ -280,9 +282,10 @@ public partial class MainWindow : Window
                 var ip = $"{networkBase}.{i}";
                 if (ip == localIp) continue;
                 
-                // Create a task for each IP check
+                // Create a task for each IP check with limited concurrency
                 var checkTask = System.Threading.Tasks.Task.Run(async () =>
                 {
+                    await semaphore.WaitAsync();
                     try
                     {
                         // Check if GameBox app is running on this IP
@@ -304,6 +307,10 @@ public partial class MainWindow : Window
                         }
                     }
                     catch { }
+                    finally
+                    {
+                        semaphore.Release();
+                    }
                 });
                 
                 tasks.Add(checkTask);
