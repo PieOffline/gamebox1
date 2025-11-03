@@ -8,6 +8,9 @@
     <Color x:Key="AccentPink">#E91E63</Color>
     <Color x:Key="SuccessGreen">#4CAF50</Color>
     <Color x:Key="DangerRed">#F44336</Color>
+    <Color x:Key="ErrorRed">#D32F2F</Color>
+    <Color x:Key="WarningYellow">#FFC107</Color>
+    <Color x:Key="SecondaryGray">#757575</Color>
     <Color x:Key="BackgroundLight">#F5F5F5</Color>
     <Color x:Key="BackgroundDark">#303030</Color>
     <Color x:Key="TextDark">#212121</Color>
@@ -20,6 +23,9 @@
     <SolidColorBrush x:Key="AccentPinkBrush" Color="{StaticResource AccentPink}"/>
     <SolidColorBrush x:Key="SuccessGreenBrush" Color="{StaticResource SuccessGreen}"/>
     <SolidColorBrush x:Key="DangerRedBrush" Color="{StaticResource DangerRed}"/>
+    <SolidColorBrush x:Key="ErrorRedBrush" Color="{StaticResource ErrorRed}"/>
+    <SolidColorBrush x:Key="WarningYellowBrush" Color="{StaticResource WarningYellow}"/>
+    <SolidColorBrush x:Key="SecondaryGrayBrush" Color="{StaticResource SecondaryGray}"/>
     <SolidColorBrush x:Key="BackgroundLightBrush" Color="{StaticResource BackgroundLight}"/>
     <SolidColorBrush x:Key="BackgroundDarkBrush" Color="{StaticResource BackgroundDark}"/>
     <SolidColorBrush x:Key="TextDarkBrush" Color="{StaticResource TextDark}"/>
