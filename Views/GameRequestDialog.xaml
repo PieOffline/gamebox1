@@ -1,0 +1,61 @@
+<Window x:Class="GameBox.Views.GameRequestDialog"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Game Request" Height="250" Width="450"
+        WindowStartupLocation="CenterScreen"
+        ResizeMode="NoResize"
+        Topmost="True"
+        Background="{StaticResource BackgroundLightBrush}">
+    
+    <Grid Margin="20">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <!-- Title -->
+        <Border Grid.Row="0" Background="{StaticResource PrimaryGradient}" 
+                Padding="15" Margin="-20,-20,-20,20" CornerRadius="0,0,10,10">
+            <TextBlock Text="🎮 Multiplayer Game Request" 
+                       FontSize="20" FontWeight="Bold" 
+                       Foreground="{StaticResource TextLightBrush}"
+                       HorizontalAlignment="Center"/>
+        </Border>
+
+        <!-- Content -->
+        <StackPanel Grid.Row="1" VerticalAlignment="Center">
+            <TextBlock x:Name="MessageText" 
+                       FontSize="16" 
+                       TextWrapping="Wrap" 
+                       TextAlignment="Center"
+                       Foreground="{StaticResource TextDarkBrush}"
+                       Margin="0,0,0,20"/>
+            
+            <TextBlock Text="Do you want to accept this game invitation?" 
+                       FontSize="14" 
+                       TextAlignment="Center"
+                       Foreground="{StaticResource TextDarkBrush}"
+                       Opacity="0.8"/>
+        </StackPanel>
+
+        <!-- Buttons -->
+        <Grid Grid.Row="2" Margin="0,20,0,0">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="10"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+
+            <Button Grid.Column="0" Content="✓ Accept &amp; Play" 
+                    Click="Accept_Click"
+                    Style="{StaticResource SuccessButtonStyle}"
+                    Padding="20,12" FontSize="16" FontWeight="Bold"/>
+
+            <Button Grid.Column="2" Content="✗ Decline" 
+                    Click="Decline_Click"
+                    Style="{StaticResource DangerButtonStyle}"
+                    Padding="20,12" FontSize="16" FontWeight="Bold"/>
+        </Grid>
+    </Grid>
+</Window>
