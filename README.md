@@ -4,17 +4,20 @@ Welcome to GameBox! A collection of engaging single-player and multiplayer mini-
 
 ## Features
 
-### 🎯 Single Player Games (10 games)
+### 🎯 Single Player Games (13 games)
 - **🏓 Pong** - Classic paddle and ball game (Fully implemented)
 - **🔗 Connect the Dots** - Draw lines between numbered dots (Fully implemented)
-- **🐍 Snake** - Grow by eating food (Coming soon)
-- **🧩 Tetris** - Falling blocks puzzle (Coming soon)
-- **🃏 Memory Match** - Flip cards to find pairs (Coming soon)
-- **🧱 Breakout** - Break bricks with ball and paddle (Coming soon)
-- **🌌 Asteroids** - Spaceship shooting asteroids (Coming soon)
-- **🌀 Maze Runner** - Navigate through maze (Coming soon)
-- **🎵 Simon Says** - Repeat color sequences (Coming soon)
-- **🔢 2048** - Combine numbered tiles (Coming soon)
+- **🐍 Snake** - Grow by eating food (Fully implemented)
+- **🧩 Tetris** - Falling blocks puzzle (Fully implemented)
+- **🃏 Memory Match** - Flip cards to find pairs (Fully implemented)
+- **🧱 Breakout** - Break bricks with ball and paddle (Fully implemented)
+- **🌌 Asteroids** - Spaceship shooting asteroids (Fully implemented)
+- **🌀 Maze Runner** - Navigate through maze (Fully implemented)
+- **🎵 Simon Says** - Repeat color sequences (Fully implemented)
+- **🔢 2048** - Combine numbered tiles (Fully implemented)
+- **♠️ Solitaire** - Klondike card game (Fully implemented)
+- **💣 Minesweeper** - Classic mine-finding puzzle (Fully implemented)
+- **🔢 Sudoku** - Number placement puzzle (Fully implemented)
 
 ### 🌐 LAN Multiplayer Games (5 games)
 - **⭕ Tic-Tac-Toe** - Classic online game (Coming soon)
@@ -25,7 +28,7 @@ Welcome to GameBox! A collection of engaging single-player and multiplayer mini-
 
 ### 🎮 Special Features
 
-#### Fruit Code Multiplayer System
+#### Fruit Code Multiplayer System (Enhanced)
 Each player gets a unique **fruit code** based on their IP address:
 - IP ending in .1 = "Apple"
 - IP ending in .2 = "Blackberry"
@@ -33,11 +36,17 @@ Each player gets a unique **fruit code** based on their IP address:
 - And so on... (supports full range 1-255)
 - IP ending in .255 = "UncleSam"
 
-To play multiplayer games:
-1. Player 1 (host) clicks on a multiplayer game
-2. Enter your opponent's fruit code (e.g., "Apple", "Blackberry")
-3. The system connects you over LAN
-4. Start playing!
+**New Request/Response System:**
+1. Player 1 (host) clicks on a multiplayer game and enters Player 2's fruit code
+2. System sends a game request to Player 2
+3. Player 2 receives a popup notification asking to accept or decline
+4. If Player 2 is already in a game, the request is automatically declined
+5. If Player 2 accepts, both players connect and the game begins
+6. If Player 2 declines, Player 1 is notified
+
+**Dual Port System:**
+- **Port 42420** - Game requests and notifications
+- **Port 42421** - Active game connections (keeps request port free)
 
 #### Local Scoreboard
 - Tracks multiplayer wins/losses during the current session
@@ -72,6 +81,20 @@ dotnet run
 - **Left Click** - Click numbered dots in sequence
 - **New Puzzle** - Generate a new random puzzle
 
+#### Solitaire Game
+- **Left Click** - Select and place cards
+- **New Game** - Start a new game
+
+#### Minesweeper Game
+- **Left Click** - Reveal cell
+- **Right Click** - Place/remove flag
+- **New Game** - Start a new game
+
+#### Sudoku Game
+- **Type 1-9** - Enter number in selected cell
+- Numbers are validated automatically
+- **New Game** - Generate a new puzzle
+
 ## Architecture
 
 - **Main Application**: WPF-based with colorful, thoughtful design
@@ -84,9 +107,11 @@ dotnet run
 ✅ **Completed**:
 - Project structure and build system optimized for Visual Studio 2022
 - Main menu with game launcher and colorful UI
-- Fruit code multiplayer system with LAN networking
+- Enhanced fruit code multiplayer system with request/response model
+- Dual-port networking system (requests on port 42420, games on port 42421)
+- In-game status tracking to prevent mid-game interruptions
 - Score tracking and statistics system
-- **All 10 Single-Player Games Fully Functional**:
+- **All 13 Single-Player Games Fully Functional**:
   - 🏓 **Pong** - Classic paddle game with AI opponent
   - 🔗 **Connect the Dots** - Number sequence puzzle with random generation
   - 🐍 **Snake** - Growing snake with food collection and scoring
@@ -97,6 +122,9 @@ dotnet run
   - 🌀 **Maze Runner** - Procedurally generated mazes with solution finder
   - 🎵 **Simon Says** - Memory sequence game with 4 colorful buttons
   - 🔢 **2048** - Number tile merging puzzle with colorful design
+  - ♠️ **Solitaire** - Classic Klondike card game with drag-and-drop
+  - 💣 **Minesweeper** - Mine-finding puzzle with flag placement
+  - 🔢 **Sudoku** - Number placement puzzle with automatic validation
 - **5 Multiplayer Games**:
   - ⭕ **Tic-Tac-Toe** - Full networking implementation
   - ✂️ **Rock Paper Scissors** - Multiplayer ready (framework complete)
