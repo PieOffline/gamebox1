@@ -48,10 +48,26 @@ Each player gets a unique **fruit code** based on their IP address:
 - **Port 42420** - Game requests and notifications
 - **Port 42421** - Active game connections (keeps request port free)
 
+**Advanced IP Format (Developer Feature):**
+For connecting to players on different subnets, the system supports custom IP formats:
+- `Apple` - Standard format, uses your local subnet (e.g., 192.168.0.1)
+- `20.Apple` - Specifies third octet (e.g., 192.168.20.1)
+- `5.102.Coffee` - Specifies second and third octets (e.g., 192.5.102.3)
+- `1.1.1.Apple` - Full IP specification (e.g., 1.1.1.1)
+
+This allows cross-subnet multiplayer without requiring direct IP address entry.
+
 #### Local Scoreboard
 - Tracks multiplayer wins/losses during the current session
 - Shows win percentage
 - Volatile storage (resets when app closes)
+
+#### Developer Menu
+- Access via password-protected button on homepage (Password: `B3T4`)
+- View online players in real-time
+- Monitor network statistics
+- Track player stats and game history
+- Scan network for active players
 
 ## Getting Started
 
