@@ -90,6 +90,24 @@ public partial class MainWindow : Window
         game2048Window.Show();
     }
 
+    private void PlaySolitaire_Click(object sender, RoutedEventArgs e)
+    {
+        var solitaireWindow = new SolitaireGame();
+        solitaireWindow.Show();
+    }
+
+    private void PlayMinesweeper_Click(object sender, RoutedEventArgs e)
+    {
+        var minesweeperWindow = new MinesweeperGame();
+        minesweeperWindow.Show();
+    }
+
+    private void PlaySudoku_Click(object sender, RoutedEventArgs e)
+    {
+        var sudokuWindow = new SudokuGame();
+        sudokuWindow.Show();
+    }
+
     // Multiplayer Game Buttons
     private void PlayTicTacToe_Click(object sender, RoutedEventArgs e)
     {

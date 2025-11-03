@@ -33,8 +33,8 @@ namespace GameBox
 
             // Disable UI while connecting
             ConnectButton.IsEnabled = false;
-            ConnectButton.Content = "Connecting...";
-            StatusText.Text = "Connecting to opponent...";
+            ConnectButton.Content = "Sending Request...";
+            StatusText.Text = "Sending game request...";
 
             try
             {
@@ -47,20 +47,25 @@ namespace GameBox
                     return;
                 }
 
-                StatusText.Text = $"Checking connection to {opponentIp}...";
+                StatusText.Text = $"Sending request to {opponentCode}...";
                 
-                // Check if opponent is reachable
-                var isReachable = await Task.Run(() => NetworkUtils.IsIpReachable(opponentIp, 3000));
+                // Send game request using new network manager
+                var networkManager = NetworkManager.Instance;
+                var localCode = NetworkUtils.IpToFruitCode(NetworkUtils.GetLocalIPAddress());
                 
-                if (!isReachable)
+                var response = await networkManager.SendGameRequestAsync(opponentIp, _gameName, localCode);
+                
+                if (!response.Success)
                 {
-                    MessageBox.Show($"Cannot reach opponent at {opponentCode} ({opponentIp}). " +
-                                  "Make sure they are online and connected to the same network.", 
-                                  "Connection Failed", MessageBoxButton.OK, MessageBoxImage.Error);
+                    MessageBox.Show($"{opponentCode} declined or could not respond:\n{response.Message}", 
+                                  "Request Declined", MessageBoxButton.OK, MessageBoxImage.Information);
                     return;
                 }
 
-                StatusText.Text = "Connection successful! Starting game...";
+                StatusText.Text = "Request accepted! Starting game...";
+                
+                // Mark as in-game
+                networkManager.SetInGameStatus(true, _gameName);
                 
                 // Create and show the game window
                 var gameWindow = _gameFactory();
@@ -70,6 +75,12 @@ namespace GameBox
                 {
                     multiplayerGame.SetOpponent(opponentIp, isHost: true);
                 }
+                
+                // When game window closes, mark as not in game
+                gameWindow.Closed += (s, args) =>
+                {
+                    networkManager.SetInGameStatus(false);
+                };
                 
                 gameWindow.Show();
                 this.Close();

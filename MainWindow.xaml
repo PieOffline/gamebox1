@@ -87,6 +87,12 @@
                             Click="PlaySimon_Click" Width="200" Height="80"/>
                     <Button Content="🔢 2048" Style="{StaticResource GameButtonStyle}" 
                             Click="Play2048_Click" Width="200" Height="80"/>
+                    <Button Content="♠️ Solitaire" Style="{StaticResource GameButtonStyle}" 
+                            Click="PlaySolitaire_Click" Width="200" Height="80"/>
+                    <Button Content="💣 Minesweeper" Style="{StaticResource GameButtonStyle}" 
+                            Click="PlayMinesweeper_Click" Width="200" Height="80"/>
+                    <Button Content="🔢 Sudoku" Style="{StaticResource GameButtonStyle}" 
+                            Click="PlaySudoku_Click" Width="200" Height="80"/>
                 </WrapPanel>
 
                 <!-- Separator -->
