@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Linq;
 using System.Net.NetworkInformation;
 using System.Threading;
 using System.Threading.Tasks;
@@ -118,18 +119,67 @@ namespace GameBox.Views
             this.Close();
         }
 
-        private void TerminateGames_Click(object sender, RoutedEventArgs e)
+        private async void TerminateGames_Click(object sender, RoutedEventArgs e)
         {
             var result = MessageBox.Show(
-                "This will immediately close all open game windows. Are you sure?",
-                "Terminate All Games",
+                "⚠️ NETWORK-WIDE COMMAND ⚠️\n\n" +
+                "This will close all game windows on ALL PCs running GameBox on your network!\n\n" +
+                "This includes:\n" +
+                "• Your own PC\n" +
+                "• All connected players\n" +
+                "• Any active games in progress\n\n" +
+                "Are you sure?",
+                "Terminate All Games (Network-Wide)",
                 MessageBoxButton.YesNo,
                 MessageBoxImage.Warning);
 
             if (result == MessageBoxResult.Yes)
             {
-                var count = StopAllGames();
-                MessageBox.Show($"Terminated {count} game window(s).", "Games Terminated",
+                // Terminate games on this PC first
+                var localCount = StopAllGames();
+                
+                // Broadcast command to network
+                var command = new DevCommand
+                {
+                    Type = DevCommandType.TerminateAllGames,
+                    Sender = NetworkUtils.IpToFruitCode(NetworkUtils.GetLocalIPAddress())
+                };
+
+                var progressWindow = new Window
+                {
+                    Title = "Broadcasting Command...",
+                    Width = 400,
+                    Height = 200,
+                    WindowStartupLocation = WindowStartupLocation.CenterScreen,
+                    ResizeMode = ResizeMode.NoResize,
+                    Content = new System.Windows.Controls.TextBlock
+                    {
+                        Text = "📡 Broadcasting terminate command to all PCs on network...\n\nPlease wait...",
+                        TextAlignment = System.Windows.TextAlignment.Center,
+                        VerticalAlignment = VerticalAlignment.Center,
+                        Margin = new Thickness(20),
+                        FontSize = 14,
+                        TextWrapping = TextWrapping.Wrap
+                    }
+                };
+                progressWindow.Show();
+
+                var broadcastResult = await DevCommandManager.Instance.BroadcastCommandAsync(command);
+                progressWindow.Close();
+
+                var message = $"✓ Terminated {localCount} game(s) locally\n" +
+                             $"✓ Command sent to {broadcastResult.SuccessCount} PC(s) on network\n\n";
+                
+                if (broadcastResult.Details.Count > 0)
+                {
+                    message += "Reached:\n" + string.Join("\n", broadcastResult.Details.Take(10));
+                    if (broadcastResult.Details.Count > 10)
+                    {
+                        message += $"\n... and {broadcastResult.Details.Count - 10} more";
+                    }
+                }
+
+                MessageBox.Show(message, "Command Broadcast Complete",
                     MessageBoxButton.OK, MessageBoxImage.Information);
             }
         }
@@ -169,32 +219,40 @@ namespace GameBox.Views
         private async void LiveUpdate_Click(object sender, RoutedEventArgs e)
         {
             var result = MessageBox.Show(
-                "This will:\n" +
+                "⚠️ NETWORK-WIDE LIVE UPDATE ⚠️\n\n" +
+                "This will update ALL PCs running GameBox on your network!\n\n" +
+                "Actions performed on all PCs:\n" +
                 "1. Stop all running games\n" +
-                "2. Pull the latest code from the main branch\n" +
-                "3. Rebuild and restart the application\n\n" +
-                "⚠️ Make sure you have saved any important work!\n\n" +
+                "2. Pull latest code from main branch\n" +
+                "3. Rebuild application\n" +
+                "4. Restart with new code\n\n" +
                 "Continue?",
-                "Live Update",
+                "Live Update (Network-Wide)",
                 MessageBoxButton.YesNo,
                 MessageBoxImage.Question);
 
             if (result == MessageBoxResult.Yes)
             {
-                // Stop all games first
-                StopAllGames();
+                // Broadcast update command to network first
+                var command = new DevCommand
+                {
+                    Type = DevCommandType.LiveUpdate,
+                    Sender = NetworkUtils.IpToFruitCode(NetworkUtils.GetLocalIPAddress()),
+                    Payload = "main"
+                };
 
-                // Show progress message
                 var progressWindow = new Window
                 {
-                    Title = "Updating...",
-                    Width = 400,
-                    Height = 150,
+                    Title = "Broadcasting Update...",
+                    Width = 450,
+                    Height = 200,
                     WindowStartupLocation = WindowStartupLocation.CenterScreen,
                     ResizeMode = ResizeMode.NoResize,
                     Content = new System.Windows.Controls.TextBlock
                     {
-                        Text = "⏳ Pulling latest changes and rebuilding...\n\nPlease wait, this may take a minute.",
+                        Text = "📡 Broadcasting live update command to all PCs...\n\n" +
+                               "All connected PCs will pull, rebuild, and restart.\n\n" +
+                               "Please wait...",
                         TextAlignment = System.Windows.TextAlignment.Center,
                         VerticalAlignment = VerticalAlignment.Center,
                         Margin = new Thickness(20),
@@ -204,25 +262,23 @@ namespace GameBox.Views
                 };
                 progressWindow.Show();
 
+                var broadcastResult = await DevCommandManager.Instance.BroadcastCommandAsync(command);
+                
+                // Now perform update on local machine
                 try
                 {
                     var updateResult = await UpdateManager.PullAndRestartAsync("main");
                     progressWindow.Close();
 
-                    if (updateResult.Success)
-                    {
-                        MessageBox.Show(updateResult.Message, "Update Complete",
-                            MessageBoxButton.OK, MessageBoxImage.Information);
+                    var message = $"✓ Update command sent to {broadcastResult.SuccessCount} PC(s)\n\n";
+                    message += updateResult.Message;
 
-                        if (updateResult.RequiresRestart)
-                        {
-                            UpdateManager.RestartApplication();
-                        }
-                    }
-                    else
+                    MessageBox.Show(message, "Update Complete",
+                        MessageBoxButton.OK, MessageBoxImage.Information);
+
+                    if (updateResult.Success && updateResult.RequiresRestart)
                     {
-                        MessageBox.Show(updateResult.Message, "Update Failed",
-                            MessageBoxButton.OK, MessageBoxImage.Error);
+                        UpdateManager.RestartApplication();
                     }
                 }
                 catch (Exception ex)
@@ -237,33 +293,41 @@ namespace GameBox.Views
         private async void InstallBeta_Click(object sender, RoutedEventArgs e)
         {
             var result = MessageBox.Show(
-                "This will:\n" +
+                "⚠️ NETWORK-WIDE BETA INSTALLATION ⚠️\n\n" +
+                "This will install beta on ALL PCs running GameBox!\n\n" +
+                "Actions performed on all PCs:\n" +
                 "1. Stop all running games\n" +
-                "2. Switch to the beta branch\n" +
-                "3. Pull the latest beta code\n" +
-                "4. Rebuild and restart the application\n\n" +
-                "⚠️ Beta versions may contain experimental features and bugs!\n\n" +
+                "2. Switch to beta branch\n" +
+                "3. Pull latest beta code\n" +
+                "4. Rebuild and restart\n\n" +
+                "⚠️ Beta may contain bugs and experimental features!\n\n" +
                 "Continue?",
-                "Install Beta",
+                "Install Beta (Network-Wide)",
                 MessageBoxButton.YesNo,
-                MessageBoxImage.Question);
+                MessageBoxImage.Warning);
 
             if (result == MessageBoxResult.Yes)
             {
-                // Stop all games first
-                StopAllGames();
+                // Broadcast beta installation to network first
+                var command = new DevCommand
+                {
+                    Type = DevCommandType.InstallBeta,
+                    Sender = NetworkUtils.IpToFruitCode(NetworkUtils.GetLocalIPAddress()),
+                    Payload = "beta"
+                };
 
-                // Show progress message
                 var progressWindow = new Window
                 {
-                    Title = "Installing Beta...",
-                    Width = 400,
-                    Height = 150,
+                    Title = "Broadcasting Beta Installation...",
+                    Width = 450,
+                    Height = 200,
                     WindowStartupLocation = WindowStartupLocation.CenterScreen,
                     ResizeMode = ResizeMode.NoResize,
                     Content = new System.Windows.Controls.TextBlock
                     {
-                        Text = "⏳ Switching to beta branch and updating...\n\nPlease wait, this may take a minute.",
+                        Text = "📡 Broadcasting beta installation to all PCs...\n\n" +
+                               "All connected PCs will switch to beta, rebuild, and restart.\n\n" +
+                               "Please wait...",
                         TextAlignment = System.Windows.TextAlignment.Center,
                         VerticalAlignment = VerticalAlignment.Center,
                         Margin = new Thickness(20),
@@ -273,25 +337,23 @@ namespace GameBox.Views
                 };
                 progressWindow.Show();
 
+                var broadcastResult = await DevCommandManager.Instance.BroadcastCommandAsync(command);
+                
+                // Now perform beta installation on local machine
                 try
                 {
                     var updateResult = await UpdateManager.PullAndRestartAsync("beta");
                     progressWindow.Close();
 
-                    if (updateResult.Success)
-                    {
-                        MessageBox.Show(updateResult.Message, "Beta Installation Complete",
-                            MessageBoxButton.OK, MessageBoxImage.Information);
+                    var message = $"✓ Beta installation command sent to {broadcastResult.SuccessCount} PC(s)\n\n";
+                    message += updateResult.Message;
 
-                        if (updateResult.RequiresRestart)
-                        {
-                            UpdateManager.RestartApplication();
-                        }
-                    }
-                    else
+                    MessageBox.Show(message, "Beta Installation Complete",
+                        MessageBoxButton.OK, MessageBoxImage.Information);
+
+                    if (updateResult.Success && updateResult.RequiresRestart)
                     {
-                        MessageBox.Show(updateResult.Message, "Beta Installation Failed",
-                            MessageBoxButton.OK, MessageBoxImage.Error);
+                        UpdateManager.RestartApplication();
                     }
                 }
                 catch (Exception ex)
@@ -303,19 +365,37 @@ namespace GameBox.Views
             }
         }
 
-        private void SelfDestruct_Click(object sender, RoutedEventArgs e)
+        private async void SelfDestruct_Click(object sender, RoutedEventArgs e)
         {
             var result = MessageBox.Show(
-                "⚠️ WARNING ⚠️\n\n" +
-                "This will IMMEDIATELY close the entire application without any further prompts.\n\n" +
-                "Are you absolutely sure?",
-                "Self Destruct",
+                "⚠️ NETWORK-WIDE SELF DESTRUCT ⚠️\n\n" +
+                "This will IMMEDIATELY close GameBox on ALL PCs on your network!\n\n" +
+                "This action:\n" +
+                "• Affects ALL connected players\n" +
+                "• Terminates ALL games immediately\n" +
+                "• Closes the application everywhere\n" +
+                "• Cannot be undone\n\n" +
+                "Are you ABSOLUTELY sure?",
+                "Self Destruct (Network-Wide)",
                 MessageBoxButton.YesNo,
                 MessageBoxImage.Stop);
 
             if (result == MessageBoxResult.Yes)
             {
-                // Close the application immediately
+                // Broadcast self-destruct to network first
+                var command = new DevCommand
+                {
+                    Type = DevCommandType.SelfDestruct,
+                    Sender = NetworkUtils.IpToFruitCode(NetworkUtils.GetLocalIPAddress())
+                };
+
+                // Send command (don't wait for response)
+                _ = DevCommandManager.Instance.BroadcastCommandAsync(command);
+
+                // Give network a moment to receive command
+                await Task.Delay(500);
+
+                // Close the application on this PC
                 Application.Current.Shutdown();
             }
         }
