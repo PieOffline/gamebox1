@@ -128,27 +128,40 @@ namespace GameBox.Views
 
             if (result == MessageBoxResult.Yes)
             {
-                // Find and close all game windows
-                var windows = Application.Current.Windows;
-                var gamesToClose = new List<Window>();
+                var count = StopAllGames();
+                MessageBox.Show($"Terminated {count} game window(s).", "Games Terminated",
+                    MessageBoxButton.OK, MessageBoxImage.Information);
+            }
+        }
 
-                foreach (Window window in windows)
+        private int StopAllGames()
+        {
+            // Find and close all game windows
+            var windows = Application.Current.Windows;
+            var gamesToClose = new List<Window>();
+
+            foreach (Window window in windows)
+            {
+                // Don't close main window or this developer menu
+                if (window.GetType().Namespace == "GameBox.Games")
                 {
-                    // Don't close main window or this developer menu
-                    if (window.GetType().Namespace == "GameBox.Games")
-                    {
-                        gamesToClose.Add(window);
-                    }
+                    gamesToClose.Add(window);
                 }
+            }
 
-                foreach (var game in gamesToClose)
+            foreach (var game in gamesToClose)
+            {
+                try
                 {
                     game.Close();
                 }
-
-                MessageBox.Show($"Terminated {gamesToClose.Count} game window(s).", "Games Terminated",
-                    MessageBoxButton.OK, MessageBoxImage.Information);
+                catch
+                {
+                    // Ignore errors when closing games
+                }
             }
+
+            return gamesToClose.Count;
         }
 
         private async void LiveUpdate_Click(object sender, RoutedEventArgs e)
@@ -158,6 +171,7 @@ namespace GameBox.Views
                 "1. Stop all running games\n" +
                 "2. Pull the latest code from the main branch\n" +
                 "3. Rebuild and restart the application\n\n" +
+                "⚠️ Make sure you have saved any important work!\n\n" +
                 "Continue?",
                 "Live Update",
                 MessageBoxButton.YesNo,
@@ -165,19 +179,60 @@ namespace GameBox.Views
 
             if (result == MessageBoxResult.Yes)
             {
-                MessageBox.Show(
-                    "Live updates are not yet implemented in this build.\n\n" +
-                    "To update, please:\n" +
-                    "1. Close the application\n" +
-                    "2. Pull the latest changes from git\n" +
-                    "3. Rebuild and restart",
-                    "Feature Not Available",
-                    MessageBoxButton.OK,
-                    MessageBoxImage.Information);
+                // Stop all games first
+                StopAllGames();
+
+                // Show progress message
+                var progressWindow = new Window
+                {
+                    Title = "Updating...",
+                    Width = 400,
+                    Height = 150,
+                    WindowStartupLocation = WindowStartupLocation.CenterScreen,
+                    ResizeMode = ResizeMode.NoResize,
+                    Content = new System.Windows.Controls.TextBlock
+                    {
+                        Text = "⏳ Pulling latest changes and rebuilding...\n\nPlease wait, this may take a minute.",
+                        TextAlignment = System.Windows.TextAlignment.Center,
+                        VerticalAlignment = VerticalAlignment.Center,
+                        Margin = new Thickness(20),
+                        FontSize = 14,
+                        TextWrapping = TextWrapping.Wrap
+                    }
+                };
+                progressWindow.Show();
+
+                try
+                {
+                    var updateResult = await UpdateManager.PullAndRestartAsync("main");
+                    progressWindow.Close();
+
+                    if (updateResult.Success)
+                    {
+                        MessageBox.Show(updateResult.Message, "Update Complete",
+                            MessageBoxButton.OK, MessageBoxImage.Information);
+
+                        if (updateResult.RequiresRestart)
+                        {
+                            UpdateManager.RestartApplication();
+                        }
+                    }
+                    else
+                    {
+                        MessageBox.Show(updateResult.Message, "Update Failed",
+                            MessageBoxButton.OK, MessageBoxImage.Error);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    progressWindow.Close();
+                    MessageBox.Show($"Update failed with error:\n{ex.Message}", "Update Error",
+                        MessageBoxButton.OK, MessageBoxImage.Error);
+                }
             }
         }
 
-        private void InstallBeta_Click(object sender, RoutedEventArgs e)
+        private async void InstallBeta_Click(object sender, RoutedEventArgs e)
         {
             var result = MessageBox.Show(
                 "This will:\n" +
@@ -185,6 +240,7 @@ namespace GameBox.Views
                 "2. Switch to the beta branch\n" +
                 "3. Pull the latest beta code\n" +
                 "4. Rebuild and restart the application\n\n" +
+                "⚠️ Beta versions may contain experimental features and bugs!\n\n" +
                 "Continue?",
                 "Install Beta",
                 MessageBoxButton.YesNo,
@@ -192,16 +248,56 @@ namespace GameBox.Views
 
             if (result == MessageBoxResult.Yes)
             {
-                MessageBox.Show(
-                    "Beta installation is not yet implemented in this build.\n\n" +
-                    "To install beta, please:\n" +
-                    "1. Close the application\n" +
-                    "2. Switch to the beta branch: git checkout beta\n" +
-                    "3. Pull the latest changes\n" +
-                    "4. Rebuild and restart",
-                    "Feature Not Available",
-                    MessageBoxButton.OK,
-                    MessageBoxImage.Information);
+                // Stop all games first
+                StopAllGames();
+
+                // Show progress message
+                var progressWindow = new Window
+                {
+                    Title = "Installing Beta...",
+                    Width = 400,
+                    Height = 150,
+                    WindowStartupLocation = WindowStartupLocation.CenterScreen,
+                    ResizeMode = ResizeMode.NoResize,
+                    Content = new System.Windows.Controls.TextBlock
+                    {
+                        Text = "⏳ Switching to beta branch and updating...\n\nPlease wait, this may take a minute.",
+                        TextAlignment = System.Windows.TextAlignment.Center,
+                        VerticalAlignment = VerticalAlignment.Center,
+                        Margin = new Thickness(20),
+                        FontSize = 14,
+                        TextWrapping = TextWrapping.Wrap
+                    }
+                };
+                progressWindow.Show();
+
+                try
+                {
+                    var updateResult = await UpdateManager.PullAndRestartAsync("beta");
+                    progressWindow.Close();
+
+                    if (updateResult.Success)
+                    {
+                        MessageBox.Show(updateResult.Message, "Beta Installation Complete",
+                            MessageBoxButton.OK, MessageBoxImage.Information);
+
+                        if (updateResult.RequiresRestart)
+                        {
+                            UpdateManager.RestartApplication();
+                        }
+                    }
+                    else
+                    {
+                        MessageBox.Show(updateResult.Message, "Beta Installation Failed",
+                            MessageBoxButton.OK, MessageBoxImage.Error);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    progressWindow.Close();
+                    MessageBox.Show($"Beta installation failed with error:\n{ex.Message}", "Installation Error",
+                        MessageBoxButton.OK, MessageBoxImage.Error);
+                }
             }
         }
 
