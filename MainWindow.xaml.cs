@@ -30,6 +30,9 @@ public partial class MainWindow : Window
         UserFruitCode = NetworkUtils.IpToFruitCode(localIp);
         LocalIpAddress = localIp;
         
+        // Register multiplayer game factories with NetworkManager
+        RegisterMultiplayerGames();
+        
         // Initial scan for online players
         ScanForPlayers();
         
@@ -156,6 +159,17 @@ public partial class MainWindow : Window
         var dialog = new MultiplayerDialog(gameName, gameFactory);
         dialog.Owner = this;
         dialog.ShowDialog();
+    }
+
+    private void RegisterMultiplayerGames()
+    {
+        // Register all multiplayer game factories so NetworkManager can create them when P2 accepts a request
+        var networkManager = NetworkManager.Instance;
+        networkManager.RegisterGameFactory("Tic-Tac-Toe", () => new TicTacToeGame());
+        networkManager.RegisterGameFactory("Rock Paper Scissors", () => new RockPaperScissorsGame());
+        networkManager.RegisterGameFactory("Checkers", () => new CheckersGame());
+        networkManager.RegisterGameFactory("Tank Battle", () => new TankBattleGame());
+        networkManager.RegisterGameFactory("Racing Game", () => new RacingGame());
     }
 
     private void ResetScores_Click(object sender, RoutedEventArgs e)
