@@ -5,10 +5,9 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:GameBox"
         mc:Ignorable="d"
-        Title="Connect to Opponent" Height="350" Width="500"
+        Title="Connect to Opponent" Height="500" Width="500"
         WindowStartupLocation="CenterOwner"
-        Background="{StaticResource BackgroundLightBrush}"
-        ResizeMode="NoResize">
+        Background="{StaticResource BackgroundLightBrush}">
     
     <Grid Margin="30">
         <Grid.RowDefinitions>
@@ -46,21 +45,28 @@
 
         <!-- Examples -->
         <TextBlock Grid.Row="3" FontSize="12" Foreground="{StaticResource TextDarkBrush}" 
-                   Opacity="0.7" Margin="0,0,0,20">
+                   Opacity="0.7" Margin="0,0,0,10">
             <Run Text="Examples: "/>
-            <Run Text="Apple, Blackberry, Carrot, Date, Egg..." FontStyle="Italic"/>
+            <Run Text="Apple, Blackberry, 20.Apple, 5.102.Coffee..." FontStyle="Italic"/>
         </TextBlock>
 
+        <!-- Local Multiplayer Button -->
+        <Button Grid.Row="4" Content="🖥️ Local Multiplayer (Same PC)" 
+                Style="{StaticResource WarningButtonStyle}"
+                Click="LocalMultiplayer_Click" 
+                HorizontalAlignment="Center" Margin="0,0,0,20"
+                ToolTip="Play on the same computer for testing"/>
+
         <!-- Status -->
-        <TextBlock Grid.Row="4" x:Name="StatusText" FontSize="12" 
+        <TextBlock Grid.Row="5" x:Name="StatusText" FontSize="12" 
                    Foreground="{StaticResource AccentOrangeBrush}" FontWeight="SemiBold"
                    HorizontalAlignment="Center" Margin="0,0,0,10"/>
 
         <!-- Spacer -->
-        <Border Grid.Row="5"/>
+        <Border Grid.Row="6"/>
 
         <!-- Buttons -->
-        <StackPanel Grid.Row="6" Orientation="Horizontal" HorizontalAlignment="Right">
+        <StackPanel Grid.Row="7" Orientation="Horizontal" HorizontalAlignment="Right">
             <Button Content="Cancel" Style="{StaticResource DangerButtonStyle}" 
                     Click="CancelButton_Click" MinWidth="80" Margin="0,0,10,0"/>
             <Button x:Name="ConnectButton" Content="Connect &amp; Play" 

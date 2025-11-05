@@ -33,34 +33,45 @@ namespace GameBox
 
             // Disable UI while connecting
             ConnectButton.IsEnabled = false;
-            ConnectButton.Content = "Connecting...";
-            StatusText.Text = "Connecting to opponent...";
+            ConnectButton.Content = "Sending Request...";
+            StatusText.Text = "Sending game request...";
 
             try
             {
-                var opponentIp = NetworkUtils.FruitCodeToIp(opponentCode);
+                // First try parsing as custom format (supports 20.Apple, 5.102.Coffee, 1.1.1.Apple, etc.)
+                var opponentIp = NetworkUtils.ParseCustomIpFormat(opponentCode);
                 
                 if (string.IsNullOrEmpty(opponentIp))
                 {
-                    MessageBox.Show($"Invalid fruit code: {opponentCode}", "Invalid Code", 
-                        MessageBoxButton.OK, MessageBoxImage.Error);
+                    MessageBox.Show($"Invalid fruit code or IP format: {opponentCode}\n\n" +
+                                  "Valid formats:\n" +
+                                  "  - Fruit code (e.g., Apple)\n" +
+                                  "  - Last two octets (e.g., 20.Apple for x.x.x.20.1)\n" +
+                                  "  - Last three octets (e.g., 5.102.Coffee for x.5.102.3)\n" +
+                                  "  - Full IP (e.g., 1.1.1.Apple for 1.1.1.1)", 
+                        "Invalid Code", MessageBoxButton.OK, MessageBoxImage.Error);
                     return;
                 }
 
-                StatusText.Text = $"Checking connection to {opponentIp}...";
+                StatusText.Text = $"Sending request to {opponentCode} ({opponentIp})...";
                 
-                // Check if opponent is reachable
-                var isReachable = await Task.Run(() => NetworkUtils.IsIpReachable(opponentIp, 3000));
+                // Send game request using new network manager
+                var networkManager = NetworkManager.Instance;
+                var localCode = NetworkUtils.IpToFruitCode(NetworkUtils.GetLocalIPAddress());
                 
-                if (!isReachable)
+                var response = await networkManager.SendGameRequestAsync(opponentIp, _gameName, localCode);
+                
+                if (!response.Success)
                 {
-                    MessageBox.Show($"Cannot reach opponent at {opponentCode} ({opponentIp}). " +
-                                  "Make sure they are online and connected to the same network.", 
-                                  "Connection Failed", MessageBoxButton.OK, MessageBoxImage.Error);
+                    MessageBox.Show($"{opponentCode} declined or could not respond:\n{response.Message}", 
+                                  "Request Declined", MessageBoxButton.OK, MessageBoxImage.Information);
                     return;
                 }
 
-                StatusText.Text = "Connection successful! Starting game...";
+                StatusText.Text = "Request accepted! Starting game...";
+                
+                // Mark as in-game
+                networkManager.SetInGameStatus(true, _gameName);
                 
                 // Create and show the game window
                 var gameWindow = _gameFactory();
@@ -70,6 +81,14 @@ namespace GameBox
                 {
                     multiplayerGame.SetOpponent(opponentIp, isHost: true);
                 }
+                
+                // When game window closes, mark as not in game
+                void OnGameClosed(object? s, EventArgs args)
+                {
+                    networkManager.SetInGameStatus(false);
+                    gameWindow.Closed -= OnGameClosed; // Detach to prevent memory leak
+                }
+                gameWindow.Closed += OnGameClosed;
                 
                 gameWindow.Show();
                 this.Close();
@@ -85,6 +104,49 @@ namespace GameBox
                 ConnectButton.IsEnabled = true;
                 ConnectButton.Content = "Connect & Play";
                 StatusText.Text = "";
+            }
+        }
+
+        private void LocalMultiplayer_Click(object sender, RoutedEventArgs e)
+        {
+            // For local multiplayer (same keyboard/mouse on same PC)
+            try
+            {
+                StatusText.Text = "Starting local multiplayer game...";
+                
+                // Mark as in-game
+                var networkManager = NetworkManager.Instance;
+                networkManager.SetInGameStatus(true, _gameName);
+                
+                // Create and show the game window
+                var gameWindow = _gameFactory();
+                
+                // If the game supports local multiplayer mode
+                if (gameWindow is ILocalMultiplayerGame localGame)
+                {
+                    localGame.SetLocalMultiplayerMode(true);
+                }
+                // Fallback for network-based multiplayer games
+                else if (gameWindow is IMultiplayerGame multiplayerGame)
+                {
+                    multiplayerGame.SetOpponent("127.0.0.1", isHost: true);
+                }
+                
+                // When game window closes, mark as not in game
+                void OnGameClosed(object? s, EventArgs args)
+                {
+                    networkManager.SetInGameStatus(false);
+                    gameWindow.Closed -= OnGameClosed;
+                }
+                gameWindow.Closed += OnGameClosed;
+                
+                gameWindow.Show();
+                this.Close();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"An error occurred: {ex.Message}", "Error", 
+                    MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
 
@@ -116,5 +178,11 @@ namespace GameBox
     public interface IMultiplayerGame
     {
         void SetOpponent(string opponentIp, bool isHost);
+    }
+
+    // Interface for local multiplayer games (same PC, same keyboard/mouse)
+    public interface ILocalMultiplayerGame
+    {
+        void SetLocalMultiplayerMode(bool enabled);
     }
 }

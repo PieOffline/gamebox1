@@ -101,7 +101,14 @@ namespace GameBox.Games
             StatusText.Text = "Watch the sequence!";
             SetButtonsEnabled(false);
             
-            // Start sequence display
+            // Show the first color immediately
+            if (gameSequence.Count > 0)
+            {
+                FlashButton(gameSequence[0]);
+                sequenceIndex = 1;
+            }
+            
+            // Start sequence display for remaining colors
             sequenceTimer.Start();
         }
 
