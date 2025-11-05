@@ -47,7 +47,7 @@ namespace GameBox.Games
         
         private const double CarWidth = 40;
         private const double CarHeight = 60;
-        private const double FinishLine = 1000; // meters
+        private const double FinishLine = 10000; // meters
 
         public RacingGame()
         {
