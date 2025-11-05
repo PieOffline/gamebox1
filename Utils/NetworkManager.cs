@@ -30,6 +30,9 @@ namespace GameBox.Utils
         private bool isListening = false;
         private bool isInGame = false;
         private string currentGameName = "";
+        
+        // Registry of game factories for creating game windows
+        private Dictionary<string, Func<Window>> gameFactories = new Dictionary<string, Func<Window>>();
 
         private NetworkManager()
         {
@@ -100,6 +103,14 @@ namespace GameBox.Utils
             PresenceService.Instance.UpdateStatus(
                 inGame ? PlayerStatus.InGame : PlayerStatus.Available
             );
+        }
+
+        /// <summary>
+        /// Register a game factory for creating game windows when receiving multiplayer requests
+        /// </summary>
+        public void RegisterGameFactory(string gameName, Func<Window> factory)
+        {
+            gameFactories[gameName] = factory;
         }
 
         /// <summary>
@@ -311,6 +322,53 @@ namespace GameBox.Utils
                             // Wait for user response
                             var userResponse = await tcs.Task;
                             await SendResponseAsync(stream, userResponse);
+                            
+                            // If request was accepted, open the game window for P2
+                            if (userResponse.Success)
+                            {
+                                // Use BeginInvoke to create the game window on UI thread
+                                _ = Application.Current.Dispatcher.BeginInvoke(() =>
+                                {
+                                    try
+                                    {
+                                        // Check if we have a factory for this game
+                                        if (gameFactories.TryGetValue(request.GameName, out var factory))
+                                        {
+                                            // Mark as in-game
+                                            SetInGameStatus(true, request.GameName);
+                                            
+                                            // Create and show the game window
+                                            var gameWindow = factory();
+                                            
+                                            // If the game supports multiplayer, pass the opponent IP
+                                            if (gameWindow is IMultiplayerGame multiplayerGame)
+                                            {
+                                                multiplayerGame.SetOpponent(request.SenderIp, isHost: false);
+                                            }
+                                            
+                                            // When game window closes, mark as not in game
+                                            void OnGameClosed(object? s, EventArgs args)
+                                            {
+                                                SetInGameStatus(false);
+                                                gameWindow.Closed -= OnGameClosed;
+                                            }
+                                            gameWindow.Closed += OnGameClosed;
+                                            
+                                            gameWindow.Show();
+                                        }
+                                        else
+                                        {
+                                            System.Diagnostics.Debug.WriteLine($"No factory registered for game: {request.GameName}");
+                                        }
+                                    }
+                                    catch (Exception ex)
+                                    {
+                                        System.Diagnostics.Debug.WriteLine($"Error opening game window for P2: {ex.Message}");
+                                        MessageBox.Show($"Error opening game window: {ex.Message}", "Error", 
+                                            MessageBoxButton.OK, MessageBoxImage.Error);
+                                    }
+                                });
+                            }
                         }
                     }
                 }
