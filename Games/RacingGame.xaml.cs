@@ -13,7 +13,7 @@ using GameBox.Utils;
 
 namespace GameBox.Games
 {
-    public partial class RacingGame : Window, IMultiplayerGame
+    public partial class RacingGame : Window, IMultiplayerGame, ILocalMultiplayerGame
     {
         private string opponentIp = "";
         private bool isHost = false;
@@ -21,23 +21,28 @@ namespace GameBox.Games
         private TcpClient? client;
         private NetworkStream? stream;
         private bool gameActive = false;
+        private bool isLocalMultiplayer = false;
         
         private DispatcherTimer gameTimer = new DispatcherTimer();
         
-        // Player car
+        // Player 1 car
         private Rectangle playerCar;
         private double playerX = 250;
         private double playerY = 500;
         private double playerPosition = 0; // Track position in meters
         
-        // Opponent car
+        // Player 2 car (opponent in local mode)
         private Rectangle opponentCar;
         private double opponentX = 300;
         private double opponentY = 500;
         private double opponentPosition = 0;
         
-        // Movement
+        // Movement for Player 1 (AD keys)
         private bool leftPressed, rightPressed;
+        
+        // Movement for Player 2 (Arrow keys)
+        private bool arrowLeftPressed, arrowRightPressed;
+        
         private double carSpeed = 5;
         
         private const double CarWidth = 40;
@@ -56,6 +61,22 @@ namespace GameBox.Games
                 GameCanvas.Focus();
                 DrawTrack();
             };
+        }
+
+        public void SetLocalMultiplayerMode(bool enabled)
+        {
+            isLocalMultiplayer = enabled;
+            gameActive = true;
+            
+            // Set up cars for local multiplayer
+            playerX = 230;
+            opponentX = 300;
+            
+            InitializeCars();
+            DrawTrack();
+            gameTimer.Start();
+            
+            StatusText.Text = "Local Multiplayer: Player 1 (A/D) vs Player 2 (Left/Right Arrows)";
         }
 
         public void SetOpponent(string opponentIp, bool isHost)
@@ -143,7 +164,7 @@ namespace GameBox.Games
         {
             if (!gameActive) return;
             
-            // Move player car
+            // Move player 1 car
             if (leftPressed && playerX > 150)
             {
                 playerX -= 3;
@@ -153,29 +174,76 @@ namespace GameBox.Games
                 playerX += 3;
             }
             
-            // Update forward position
+            // Update player 1 forward position
             playerPosition += carSpeed;
             
-            // Update display
+            // Update player 1 display
             System.Windows.Controls.Canvas.SetLeft(playerCar, playerX);
             PlayerPositionText.Text = $"{(int)playerPosition}m";
             
-            // Animate track movement
-            AnimateTrack();
-            
-            // Check for win
-            if (playerPosition >= FinishLine)
+            if (isLocalMultiplayer)
             {
-                gameActive = false;
-                gameTimer.Stop();
-                StatusText.Text = "You win! 🎉";
-                ScoreManager.Instance.RecordWin();
-                MessageBox.Show($"Congratulations! You finished first!\nYour time: {playerPosition / carSpeed / 60:F2}s", 
-                    "Victory!", MessageBoxButton.OK, MessageBoxImage.Information);
+                // Move player 2 car
+                if (arrowLeftPressed && opponentX > 150)
+                {
+                    opponentX -= 3;
+                }
+                if (arrowRightPressed && opponentX < 400)
+                {
+                    opponentX += 3;
+                }
+                
+                // Update player 2 forward position
+                opponentPosition += carSpeed;
+                
+                // Update player 2 display
+                System.Windows.Controls.Canvas.SetLeft(opponentCar, opponentX);
+                
+                // Check for wins in local multiplayer
+                if (playerPosition >= FinishLine && opponentPosition < FinishLine)
+                {
+                    gameActive = false;
+                    gameTimer.Stop();
+                    StatusText.Text = "Player 1 wins! 🎉";
+                    MessageBox.Show("Player 1 finished first!", "Victory!", MessageBoxButton.OK, MessageBoxImage.Information);
+                    return;
+                }
+                else if (opponentPosition >= FinishLine && playerPosition < FinishLine)
+                {
+                    gameActive = false;
+                    gameTimer.Stop();
+                    StatusText.Text = "Player 2 wins! 🎉";
+                    MessageBox.Show("Player 2 finished first!", "Victory!", MessageBoxButton.OK, MessageBoxImage.Information);
+                    return;
+                }
+                else if (playerPosition >= FinishLine && opponentPosition >= FinishLine)
+                {
+                    gameActive = false;
+                    gameTimer.Stop();
+                    StatusText.Text = "It's a tie!";
+                    MessageBox.Show("Both players finished at the same time!", "Tie!", MessageBoxButton.OK, MessageBoxImage.Information);
+                    return;
+                }
+            }
+            else
+            {
+                // Check for win in network mode
+                if (playerPosition >= FinishLine)
+                {
+                    gameActive = false;
+                    gameTimer.Stop();
+                    StatusText.Text = "You win! 🎉";
+                    ScoreManager.Instance.RecordWin();
+                    MessageBox.Show($"Congratulations! You finished first!\nYour time: {playerPosition / carSpeed / 60:F2}s", 
+                        "Victory!", MessageBoxButton.OK, MessageBoxImage.Information);
+                }
+                
+                // Send position update to opponent
+                SendPositionUpdate();
             }
             
-            // Send position update to opponent
-            SendPositionUpdate();
+            // Animate track movement
+            AnimateTrack();
         }
 
         private void AnimateTrack()
@@ -200,14 +268,42 @@ namespace GameBox.Games
         {
             if (!gameActive) return;
             
-            if (e.Key == Key.Left) leftPressed = true;
-            if (e.Key == Key.Right) rightPressed = true;
+            if (isLocalMultiplayer)
+            {
+                // Player 1 controls (A/D)
+                if (e.Key == Key.A) leftPressed = true;
+                if (e.Key == Key.D) rightPressed = true;
+                
+                // Player 2 controls (Arrow Keys)
+                if (e.Key == Key.Left) arrowLeftPressed = true;
+                if (e.Key == Key.Right) arrowRightPressed = true;
+            }
+            else
+            {
+                // Network multiplayer - use arrow keys for single player
+                if (e.Key == Key.Left) leftPressed = true;
+                if (e.Key == Key.Right) rightPressed = true;
+            }
         }
 
         private void Window_KeyUp(object sender, KeyEventArgs e)
         {
-            if (e.Key == Key.Left) leftPressed = false;
-            if (e.Key == Key.Right) rightPressed = false;
+            if (isLocalMultiplayer)
+            {
+                // Player 1 controls (A/D)
+                if (e.Key == Key.A) leftPressed = false;
+                if (e.Key == Key.D) rightPressed = false;
+                
+                // Player 2 controls (Arrow Keys)
+                if (e.Key == Key.Left) arrowLeftPressed = false;
+                if (e.Key == Key.Right) arrowRightPressed = false;
+            }
+            else
+            {
+                // Network multiplayer - use arrow keys for single player
+                if (e.Key == Key.Left) leftPressed = false;
+                if (e.Key == Key.Right) rightPressed = false;
+            }
         }
 
         private void SendPositionUpdate()
