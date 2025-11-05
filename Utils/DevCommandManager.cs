@@ -296,7 +296,10 @@ namespace GameBox.Utils
         }
 
         /// <summary>
-        /// Perform live update by pulling code and reloading
+        /// Perform live update by pulling code and performing fast restart
+        /// Note: True hot-reload (without restart) would require complex assembly unloading/reloading
+        /// which is not practical in WPF applications. This implementation provides a "live update"
+        /// by performing git pull + rebuild + fast restart, giving users updated code within seconds.
         /// </summary>
         private async Task PerformLiveUpdateAsync(string? branch)
         {
@@ -305,22 +308,37 @@ namespace GameBox.Utils
                 // Show update screen
                 Application.Current.Dispatcher.Invoke(() =>
                 {
-                    ShowUpdateScreen("Receiving live update...");
+                    ShowUpdateScreen($"📥 Receiving live update from {branch ?? "main"} branch...\n\n" +
+                                   "Pulling latest code and rebuilding...\n" +
+                                   "The app will restart automatically in a moment.");
                 });
 
-                // For now, perform the update and restart
-                // True hot-reload would require more complex assembly reloading
+                // Perform the update with git pull and rebuild
                 var result = await UpdateManager.PullAndRestartAsync(branch ?? "main");
                 
                 if (result.Success && result.RequiresRestart)
                 {
-                    await Task.Delay(1000);
+                    // Brief delay to show message, then restart with new code
+                    await Task.Delay(2000);
                     UpdateManager.RestartApplication();
+                }
+                else if (!result.Success)
+                {
+                    Application.Current.Dispatcher.Invoke(() =>
+                    {
+                        MessageBox.Show($"Live update failed:\n{result.Message}", 
+                            "Update Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                    });
                 }
             }
             catch (Exception ex)
             {
                 System.Diagnostics.Debug.WriteLine($"Live update failed: {ex.Message}");
+                Application.Current.Dispatcher.Invoke(() =>
+                {
+                    MessageBox.Show($"Live update encountered an error:\n{ex.Message}", 
+                        "Update Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                });
             }
         }
 
