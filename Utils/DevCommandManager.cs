@@ -20,7 +20,7 @@ namespace GameBox.Utils
         public static DevCommandManager Instance => _instance ??= new DevCommandManager();
 
         // Dedicated port for developer commands
-        private const int DevCommandPort = 42422;
+        private const int DevCommandPort = 42423;
         
         private TcpListener? devListener;
         private bool isListening = false;
