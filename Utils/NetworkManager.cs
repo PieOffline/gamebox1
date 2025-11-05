@@ -57,6 +57,17 @@ namespace GameBox.Utils
             catch (Exception ex)
             {
                 System.Diagnostics.Debug.WriteLine($"Failed to start request listener: {ex.Message}");
+                try
+                {
+                    // Show a user-visible warning so you know the listener failed to start
+                    Application.Current?.Dispatcher?.BeginInvoke(new Action(() =>
+                    {
+                        MessageBox.Show($"Failed to start game request listener on port {RequestPort}:\n{ex.Message}\n\n" +
+                                        "Check that no other process is using the port and that your firewall allows inbound connections.",
+                                        "Network Error", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    }));
+                }
+                catch { }
             }
         }
 
@@ -207,6 +218,9 @@ namespace GameBox.Utils
                     if (requestListener == null) break;
 
                     var client = await requestListener.AcceptTcpClientAsync();
+                    
+                    // log remote endpoint for diagnosis
+                    System.Diagnostics.Debug.WriteLine($"Accepted request from {client.Client.RemoteEndPoint}");
                     
                     // Handle request in background with error handling
                     _ = Task.Run(async () =>
