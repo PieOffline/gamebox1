@@ -100,14 +100,41 @@ namespace GameBox.Utils
             {
                 using var client = new TcpClient();
                 
-                // Try to connect with timeout
+                // Try to connect with timeout, and handle connection errors explicitly
                 var connectTask = client.ConnectAsync(opponentIp, RequestPort);
-                if (await Task.WhenAny(connectTask, Task.Delay(3000)) != connectTask)
+                var timeoutTask = Task.Delay(3000);
+
+                var completed = await Task.WhenAny(connectTask, timeoutTask);
+                if (completed == timeoutTask)
                 {
                     return new GameRequestResponse
                     {
                         Success = false,
                         Message = "Connection timeout - opponent may not be online"
+                    };
+                }
+
+                // If connectTask completed but faulted, await it to observe exception and return a friendly message
+                try
+                {
+                    await connectTask; // will rethrow if failed
+                }
+                catch (Exception ex)
+                {
+                    return new GameRequestResponse
+                    {
+                        Success = false,
+                        Message = $"Connection error: {ex.Message}"
+                    };
+                }
+
+                // Ensure the client is actually connected before using the stream
+                if (!client.Connected)
+                {
+                    return new GameRequestResponse
+                    {
+                        Success = false,
+                        Message = "Connection failed - socket not connected"
                     };
                 }
 
