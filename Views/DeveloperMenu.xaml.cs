@@ -136,14 +136,16 @@ namespace GameBox.Views
 
         private int StopAllGames()
         {
-            // Find and close all game windows
+            // Find and close all game windows using interface detection (more robust than namespace check)
             var windows = Application.Current.Windows;
             var gamesToClose = new List<Window>();
 
             foreach (Window window in windows)
             {
-                // Don't close main window or this developer menu
-                if (window.GetType().Namespace == "GameBox.Games")
+                // Check if window is a game by checking for multiplayer interfaces
+                // or if it's in the Games namespace (fallback)
+                if (window is IMultiplayerGame || window is ILocalMultiplayerGame || 
+                    window.GetType().Namespace == "GameBox.Games")
                 {
                     gamesToClose.Add(window);
                 }

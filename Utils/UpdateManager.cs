@@ -122,8 +122,21 @@ namespace GameBox.Utils
         {
             try
             {
-                // Get the current executable path
-                var exePath = Process.GetCurrentProcess().MainModule?.FileName;
+                // Get the current executable path (using Environment.ProcessPath for .NET 5+)
+                var exePath = Environment.ProcessPath;
+                if (string.IsNullOrEmpty(exePath))
+                {
+                    // Fallback to MainModule for older .NET versions
+                    try
+                    {
+                        exePath = Process.GetCurrentProcess().MainModule?.FileName;
+                    }
+                    catch (Exception)
+                    {
+                        // Ignore security exceptions
+                    }
+                }
+
                 if (string.IsNullOrEmpty(exePath))
                 {
                     MessageBox.Show("Unable to determine application path for restart.", "Restart Failed",
@@ -204,7 +217,17 @@ namespace GameBox.Utils
                 var output = await process.StandardOutput.ReadToEndAsync();
                 var error = await process.StandardError.ReadToEndAsync();
 
-                await process.WaitForExitAsync();
+                // Wait for process with timeout to prevent hanging
+                var timeout = TimeSpan.FromSeconds(120);
+                if (!process.WaitForExit((int)timeout.TotalMilliseconds))
+                {
+                    process.Kill();
+                    return new CommandResult
+                    {
+                        Success = false,
+                        Output = $"Command timed out after {timeout.TotalSeconds} seconds"
+                    };
+                }
 
                 return new CommandResult
                 {
