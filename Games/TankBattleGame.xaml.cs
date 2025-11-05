@@ -14,7 +14,7 @@ using GameBox.Utils;
 
 namespace GameBox.Games
 {
-    public partial class TankBattleGame : Window, IMultiplayerGame
+    public partial class TankBattleGame : Window, IMultiplayerGame, ILocalMultiplayerGame
     {
         private string opponentIp = "";
         private bool isHost = false;
@@ -22,10 +22,11 @@ namespace GameBox.Games
         private TcpClient? client;
         private NetworkStream? stream;
         private bool gameActive = false;
+        private bool isLocalMultiplayer = false;
         
         private DispatcherTimer gameTimer = new DispatcherTimer();
         
-        // Player tank
+        // Player tank (left/player 1)
         private Rectangle playerTank;
         private double playerX = 100;
         private double playerY = 100;
@@ -33,15 +34,18 @@ namespace GameBox.Games
         private int playerHealth = 100;
         private int playerScore = 0;
         
-        // Opponent tank
+        // Opponent tank (right/player 2)
         private Rectangle opponentTank;
         private double opponentX = 700;
         private double opponentY = 500;
         private double opponentAngle = 180;
         private int opponentHealth = 100;
         
-        // Movement keys
+        // Movement keys for Player 1 (WASD+E)
         private bool wPressed, aPressed, sPressed, dPressed;
+        
+        // Movement keys for Player 2 (Arrow Keys+Ctrl)
+        private bool upPressed, leftPressed, downPressed, rightPressed;
         
         private const double TankSpeed = 3;
         private const double TankSize = 30;
@@ -54,6 +58,23 @@ namespace GameBox.Games
             gameTimer.Tick += GameLoop;
             
             this.Loaded += (s, e) => GameCanvas.Focus();
+        }
+
+        public void SetLocalMultiplayerMode(bool enabled)
+        {
+            isLocalMultiplayer = enabled;
+            gameActive = true;
+            
+            // Set up tanks for local multiplayer
+            playerX = 100;
+            playerY = 300;
+            opponentX = 700;
+            opponentY = 300;
+            
+            InitializeTanks();
+            gameTimer.Start();
+            
+            StatusText.Text = "Local Multiplayer: Player 1 (WASD+E) vs Player 2 (Arrows+Ctrl)";
         }
 
         public void SetOpponent(string opponentIp, bool isHost)
@@ -123,40 +144,81 @@ namespace GameBox.Games
         {
             if (!gameActive) return;
             
-            // Update player position based on input
+            // Update player 1 position based on input (WASD)
             if (wPressed) playerY -= TankSpeed;
             if (sPressed) playerY += TankSpeed;
             if (aPressed) playerX -= TankSpeed;
             if (dPressed) playerX += TankSpeed;
             
-            // Clamp to canvas bounds
+            // Clamp player 1 to canvas bounds
             playerX = Math.Max(0, Math.Min(GameCanvas.ActualWidth - TankSize, playerX));
             playerY = Math.Max(0, Math.Min(GameCanvas.ActualHeight - TankSize, playerY));
             
-            // Update tank position
+            // Update player 1 tank position
             Canvas.SetLeft(playerTank, playerX);
             Canvas.SetTop(playerTank, playerY);
             
-            // Send position update to opponent
-            SendPositionUpdate();
+            // In local multiplayer, also update player 2 (opponent tank) locally
+            if (isLocalMultiplayer)
+            {
+                // Update player 2 position based on input (Arrow Keys)
+                if (upPressed) opponentY -= TankSpeed;
+                if (downPressed) opponentY += TankSpeed;
+                if (leftPressed) opponentX -= TankSpeed;
+                if (rightPressed) opponentX += TankSpeed;
+                
+                // Clamp player 2 to canvas bounds
+                opponentX = Math.Max(0, Math.Min(GameCanvas.ActualWidth - TankSize, opponentX));
+                opponentY = Math.Max(0, Math.Min(GameCanvas.ActualHeight - TankSize, opponentY));
+                
+                // Update player 2 tank position
+                Canvas.SetLeft(opponentTank, opponentX);
+                Canvas.SetTop(opponentTank, opponentY);
+            }
+            else
+            {
+                // Send position update to opponent in network mode
+                SendPositionUpdate();
+            }
         }
 
         private void Window_KeyDown(object sender, KeyEventArgs e)
         {
             if (!gameActive) return;
             
+            // Player 1 controls (WASD+E)
             switch (e.Key)
             {
                 case Key.W: wPressed = true; break;
                 case Key.A: aPressed = true; break;
                 case Key.S: sPressed = true; break;
                 case Key.D: dPressed = true; break;
-                case Key.Space: FireBullet(); break;
+                case Key.E: 
+                    if (isLocalMultiplayer) FireBulletPlayer1(); 
+                    break;
+                case Key.Space: 
+                    if (!isLocalMultiplayer) FireBullet(); 
+                    break;
+            }
+            
+            // Player 2 controls (Arrow Keys+Ctrl) - only in local multiplayer
+            if (isLocalMultiplayer)
+            {
+                switch (e.Key)
+                {
+                    case Key.Up: upPressed = true; break;
+                    case Key.Left: leftPressed = true; break;
+                    case Key.Down: downPressed = true; break;
+                    case Key.Right: rightPressed = true; break;
+                    case Key.LeftCtrl:
+                    case Key.RightCtrl: FireBulletPlayer2(); break;
+                }
             }
         }
 
         private void Window_KeyUp(object sender, KeyEventArgs e)
         {
+            // Player 1 controls
             switch (e.Key)
             {
                 case Key.W: wPressed = false; break;
@@ -164,6 +226,129 @@ namespace GameBox.Games
                 case Key.S: sPressed = false; break;
                 case Key.D: dPressed = false; break;
             }
+            
+            // Player 2 controls - only in local multiplayer
+            if (isLocalMultiplayer)
+            {
+                switch (e.Key)
+                {
+                    case Key.Up: upPressed = false; break;
+                    case Key.Left: leftPressed = false; break;
+                    case Key.Down: downPressed = false; break;
+                    case Key.Right: rightPressed = false; break;
+                }
+            }
+        }
+
+        private void FireBulletPlayer1()
+        {
+            // Create bullet from player 1
+            var bullet = new Ellipse
+            {
+                Width = 8,
+                Height = 8,
+                Fill = Brushes.Blue
+            };
+            
+            Canvas.SetLeft(bullet, playerX + TankSize / 2);
+            Canvas.SetTop(bullet, playerY + TankSize / 2);
+            GameCanvas.Children.Add(bullet);
+            
+            // Animate bullet towards player 2
+            var bulletTimer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(16) };
+            bulletTimer.Tick += (s, e) =>
+            {
+                double dx = opponentX - Canvas.GetLeft(bullet);
+                double dy = opponentY - Canvas.GetTop(bullet);
+                double distance = Math.Sqrt(dx * dx + dy * dy);
+                
+                if (distance < 30)
+                {
+                    // Hit player 2
+                    bulletTimer.Stop();
+                    GameCanvas.Children.Remove(bullet);
+                    
+                    opponentHealth -= 10;
+                    
+                    playerScore += 10;
+                    PlayerScoreText.Text = playerScore.ToString();
+                    
+                    if (opponentHealth <= 0)
+                    {
+                        gameActive = false;
+                        StatusText.Text = "Player 1 wins!";
+                        MessageBox.Show("Player 1 wins!", "Game Over", MessageBoxButton.OK, MessageBoxImage.Information);
+                    }
+                }
+                else if (Canvas.GetLeft(bullet) < 0 || Canvas.GetLeft(bullet) > GameCanvas.ActualWidth ||
+                         Canvas.GetTop(bullet) < 0 || Canvas.GetTop(bullet) > GameCanvas.ActualHeight)
+                {
+                    // Out of bounds
+                    bulletTimer.Stop();
+                    GameCanvas.Children.Remove(bullet);
+                }
+                else
+                {
+                    // Move bullet
+                    Canvas.SetLeft(bullet, Canvas.GetLeft(bullet) + (dx / distance) * 10);
+                    Canvas.SetTop(bullet, Canvas.GetTop(bullet) + (dy / distance) * 10);
+                }
+            };
+            bulletTimer.Start();
+        }
+
+        private void FireBulletPlayer2()
+        {
+            // Create bullet from player 2
+            var bullet = new Ellipse
+            {
+                Width = 8,
+                Height = 8,
+                Fill = Brushes.Red
+            };
+            
+            Canvas.SetLeft(bullet, opponentX + TankSize / 2);
+            Canvas.SetTop(bullet, opponentY + TankSize / 2);
+            GameCanvas.Children.Add(bullet);
+            
+            // Animate bullet towards player 1
+            var bulletTimer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(16) };
+            bulletTimer.Tick += (s, e) =>
+            {
+                double dx = playerX - Canvas.GetLeft(bullet);
+                double dy = playerY - Canvas.GetTop(bullet);
+                double distance = Math.Sqrt(dx * dx + dy * dy);
+                
+                if (distance < 30)
+                {
+                    // Hit player 1
+                    bulletTimer.Stop();
+                    GameCanvas.Children.Remove(bullet);
+                    
+                    playerHealth -= 10;
+                    
+                    if (playerHealth <= 0)
+                    {
+                        gameActive = false;
+                        StatusText.Text = "Player 2 wins!";
+                        MessageBox.Show("Player 2 wins!", "Game Over", MessageBoxButton.OK, MessageBoxImage.Information);
+                    }
+                }
+                else if (Canvas.GetLeft(bullet) < 0 || Canvas.GetLeft(bullet) > GameCanvas.ActualWidth ||
+                         Canvas.GetTop(bullet) < 0 || Canvas.GetTop(bullet) > GameCanvas.ActualHeight)
+                {
+                    // Out of bounds
+                    bulletTimer.Stop();
+                    GameCanvas.Children.Remove(bullet);
+                }
+                else
+                {
+                    // Move bullet
+                    Canvas.SetLeft(bullet, Canvas.GetLeft(bullet) + (dx / distance) * 10);
+                    Canvas.SetTop(bullet, Canvas.GetTop(bullet) + (dy / distance) * 10);
+                }
+            };
+            bulletTimer.Start();
         }
 
         private void FireBullet()

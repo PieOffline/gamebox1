@@ -320,11 +320,21 @@ public partial class MainWindow : Window
             await System.Threading.Tasks.Task.WhenAll(tasks);
         });
         
-        if (onlinePlayers.Count == 0)
+        // Always add self to the list first
+        var localIp = NetworkUtils.GetLocalIPAddress();
+        var selfInfo = new OnlinePlayerInfo
+        {
+            PlayerCode = NetworkUtils.IpToFruitCode(localIp),
+            Status = PlayerStatus.Available,
+            IsSelf = true
+        };
+        onlinePlayers.Insert(0, selfInfo);
+        
+        if (onlinePlayers.Count == 1) // Only self in list
         {
             onlinePlayers.Add(new OnlinePlayerInfo 
             { 
-                PlayerCode = "No players detected",
+                PlayerCode = "No other players detected",
                 Status = PlayerStatus.Available
             });
         }
@@ -340,10 +350,20 @@ public class OnlinePlayerInfo
 {
     public string PlayerCode { get; set; } = "";
     public PlayerStatus Status { get; set; }
+    public bool IsSelf { get; set; } = false;
     
-    public string StatusText => Status == PlayerStatus.InGame ? "(In Game)" : "";
+    public string StatusText => IsSelf ? "(You)" : (Status == PlayerStatus.InGame ? "(In Game)" : "");
     
-    public Brush StatusColor => Status == PlayerStatus.InGame 
-        ? new SolidColorBrush(Color.FromRgb(255, 193, 7))  // Yellow for in-game
-        : new SolidColorBrush(Color.FromRgb(76, 175, 80));  // Green for available
+    public Brush StatusColor
+    {
+        get
+        {
+            if (IsSelf)
+                return new SolidColorBrush(Color.FromRgb(33, 150, 243));  // Blue for self
+            else if (Status == PlayerStatus.InGame)
+                return new SolidColorBrush(Color.FromRgb(255, 193, 7));  // Yellow for in-game
+            else
+                return new SolidColorBrush(Color.FromRgb(76, 175, 80));  // Green for available
+        }
+    }
 }

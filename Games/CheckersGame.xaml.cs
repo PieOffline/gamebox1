@@ -14,7 +14,7 @@ using GameBox.Utils;
 
 namespace GameBox.Games
 {
-    public partial class CheckersGame : Window, IMultiplayerGame
+    public partial class CheckersGame : Window, IMultiplayerGame, ILocalMultiplayerGame
     {
         private string opponentIp = "";
         private bool isHost = false;
@@ -23,6 +23,7 @@ namespace GameBox.Games
         private NetworkStream? stream;
         private bool gameActive = false;
         private bool isMyTurn = false;
+        private bool isLocalMultiplayer = false;
         
         private const int BoardSize = 8;
         private const int CellSize = 80;
@@ -37,6 +38,15 @@ namespace GameBox.Games
             InitializeComponent();
             InitializeBoard();
             DrawBoard();
+        }
+
+        public void SetLocalMultiplayerMode(bool enabled)
+        {
+            isLocalMultiplayer = enabled;
+            gameActive = true;
+            isRedPlayer = true;
+            isMyTurn = true;
+            StatusText.Text = "Red player's turn (Local Multiplayer)";
         }
 
         public void SetOpponent(string opponentIp, bool isHost)
@@ -159,7 +169,19 @@ namespace GameBox.Games
 
         private void OnPieceClick(CheckersPiece piece)
         {
-            if (!gameActive || !isMyTurn || piece.IsRed != isRedPlayer) return;
+            if (!gameActive) return;
+            
+            // In local multiplayer, allow any player to move their pieces
+            if (isLocalMultiplayer)
+            {
+                // Red player can only move red pieces, black can only move black
+                if ((isRedPlayer && !piece.IsRed) || (!isRedPlayer && piece.IsRed)) return;
+            }
+            else
+            {
+                // In network mode, check if it's the player's turn
+                if (!isMyTurn || piece.IsRed != isRedPlayer) return;
+            }
             
             selectedPiece = piece;
             HighlightValidMoves(piece);
@@ -167,7 +189,10 @@ namespace GameBox.Games
 
         private void OnCellClick(int row, int col)
         {
-            if (!gameActive || !isMyTurn || selectedPiece == null) return;
+            if (!gameActive || selectedPiece == null) return;
+            
+            // In network mode, check if it's the player's turn
+            if (!isLocalMultiplayer && !isMyTurn) return;
             
             // Check if move is valid
             if (IsValidMove(selectedPiece, row, col))
@@ -290,34 +315,54 @@ namespace GameBox.Games
             selectedPiece = null;
             DrawBoard();
             
-            // Send move to opponent
-            var move = new CheckersMove 
-            { 
-                FromRow = fromRow, 
-                FromCol = fromCol, 
-                ToRow = toRow, 
-                ToCol = toCol,
-                IsJump = isJump,
-                CapturedRow = capturedRow,
-                CapturedCol = capturedCol,
-                BecameKing = piece.IsKing
-            };
-            SendMove(move);
-            
-            // Check for win
-            if (CheckWin())
+            if (isLocalMultiplayer)
             {
-                StatusText.Text = "You win! 🎉";
-                gameActive = false;
-                ScoreManager.Instance.RecordWin();
-                MessageBox.Show("Congratulations! You won!", "Victory!", 
-                    MessageBoxButton.OK, MessageBoxImage.Information);
-                return;
+                // Check for win in local multiplayer
+                if (CheckWinLocal())
+                {
+                    string winner = isRedPlayer ? "Red" : "Black";
+                    StatusText.Text = $"{winner} player wins! 🎉";
+                    gameActive = false;
+                    MessageBox.Show($"Congratulations! {winner} player won!", "Victory!", 
+                        MessageBoxButton.OK, MessageBoxImage.Information);
+                    return;
+                }
+                
+                // Switch turns in local multiplayer
+                isRedPlayer = !isRedPlayer;
+                StatusText.Text = isRedPlayer ? "Red player's turn" : "Black player's turn";
             }
-            
-            // Switch turns
-            isMyTurn = false;
-            StatusText.Text = "Opponent's turn...";
+            else
+            {
+                // Send move to opponent in network mode
+                var move = new CheckersMove 
+                { 
+                    FromRow = fromRow, 
+                    FromCol = fromCol, 
+                    ToRow = toRow, 
+                    ToCol = toCol,
+                    IsJump = isJump,
+                    CapturedRow = capturedRow,
+                    CapturedCol = capturedCol,
+                    BecameKing = piece.IsKing
+                };
+                SendMove(move);
+                
+                // Check for win
+                if (CheckWin())
+                {
+                    StatusText.Text = "You win! 🎉";
+                    gameActive = false;
+                    ScoreManager.Instance.RecordWin();
+                    MessageBox.Show("Congratulations! You won!", "Victory!", 
+                        MessageBoxButton.OK, MessageBoxImage.Information);
+                    return;
+                }
+                
+                // Switch turns
+                isMyTurn = false;
+                StatusText.Text = "Opponent's turn...";
+            }
         }
 
         private void ProcessOpponentMove(CheckersMove move)
@@ -358,6 +403,26 @@ namespace GameBox.Games
                 isMyTurn = true;
                 StatusText.Text = "Your turn!";
             }
+        }
+
+        private bool CheckWinLocal()
+        {
+            int redPieces = 0, blackPieces = 0;
+            
+            for (int row = 0; row < BoardSize; row++)
+            {
+                for (int col = 0; col < BoardSize; col++)
+                {
+                    if (board[row, col] != null)
+                    {
+                        if (board[row, col]!.IsRed) redPieces++;
+                        else blackPieces++;
+                    }
+                }
+            }
+            
+            // Return true if the current player has won (opponent has no pieces)
+            return (isRedPlayer && blackPieces == 0) || (!isRedPlayer && redPieces == 0);
         }
 
         private bool CheckWin()

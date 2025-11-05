@@ -57,7 +57,7 @@
                                             </Grid.ColumnDefinitions>
                                             
                                             <Ellipse Grid.Column="0" Width="10" Height="10" 
-                                                     Fill="{StaticResource SuccessGreenBrush}" Margin="0,0,10,0"/>
+                                                     Fill="{Binding DisplayColor}" Margin="0,0,10,0"/>
                                             <StackPanel Grid.Column="1">
                                                 <TextBlock Text="{Binding FruitCode}" FontSize="16" FontWeight="Bold" 
                                                            Foreground="{StaticResource PrimaryBlueBrush}"/>
@@ -166,6 +166,87 @@
                                     <LineBreak/>
                                     <Run Text="• 1.1.1.Apple" FontWeight="Bold"/> - Full IP specification (e.g., 1.1.1.1)
                                 </TextBlock>
+                            </StackPanel>
+                        </Border>
+                    </StackPanel>
+                </ScrollViewer>
+            </TabItem>
+
+            <!-- Advanced Dev Tools Tab -->
+            <TabItem Header="Dev Tools">
+                <ScrollViewer VerticalScrollBarVisibility="Auto">
+                    <StackPanel Margin="10" Orientation="Vertical">
+                        <TextBlock Text="Advanced Developer Tools" FontSize="18" FontWeight="Bold" 
+                                   Foreground="{StaticResource PrimaryBlueBrush}" Margin="0,0,0,20"/>
+                        
+                        <TextBlock Text="⚠️ WARNING: These tools are for development and testing only!" 
+                                   FontSize="14" FontWeight="Bold" Foreground="Red" 
+                                   TextWrapping="Wrap" Margin="0,0,0,20"/>
+                        
+                        <!-- Game Control Tools -->
+                        <Border Background="White" BorderBrush="{StaticResource PrimaryBlueBrush}" 
+                                BorderThickness="1" Padding="15" Margin="0,0,0,10" CornerRadius="5">
+                            <StackPanel>
+                                <TextBlock Text="Game Control" FontSize="14" FontWeight="SemiBold" 
+                                           Foreground="{StaticResource TextDarkBrush}" Margin="0,0,0,10"/>
+                                
+                                <Button Content="🛑 Terminate All Games" 
+                                        Style="{StaticResource DangerButtonStyle}" 
+                                        Click="TerminateGames_Click" 
+                                        Margin="0,0,0,5"
+                                        ToolTip="Force close all open game windows"/>
+                                
+                                <TextBlock Text="Closes all game windows immediately" 
+                                           FontSize="11" Foreground="{StaticResource TextDarkBrush}" 
+                                           Opacity="0.7" Margin="5,0,0,0"/>
+                            </StackPanel>
+                        </Border>
+                        
+                        <!-- Update Tools -->
+                        <Border Background="White" BorderBrush="{StaticResource PrimaryBlueBrush}" 
+                                BorderThickness="1" Padding="15" Margin="0,0,0,10" CornerRadius="5">
+                            <StackPanel>
+                                <TextBlock Text="Live Updates" FontSize="14" FontWeight="SemiBold" 
+                                           Foreground="{StaticResource TextDarkBrush}" Margin="0,0,0,10"/>
+                                
+                                <Button Content="📥 Pull Live Update (Main Branch)" 
+                                        Style="{StaticResource WarningButtonStyle}" 
+                                        Click="LiveUpdate_Click" 
+                                        Margin="0,0,0,5"
+                                        ToolTip="Pull latest code from main branch and restart"/>
+                                
+                                <TextBlock Text="Stops all games, pulls from main branch, and restarts app" 
+                                           FontSize="11" Foreground="{StaticResource TextDarkBrush}" 
+                                           Opacity="0.7" Margin="5,0,0,10"/>
+                                
+                                <Button Content="🧪 Install Beta Version" 
+                                        Style="{StaticResource WarningButtonStyle}" 
+                                        Click="InstallBeta_Click" 
+                                        Margin="0,0,0,5"
+                                        ToolTip="Switch to beta branch and restart"/>
+                                
+                                <TextBlock Text="Pulls from beta branch and restarts app" 
+                                           FontSize="11" Foreground="{StaticResource TextDarkBrush}" 
+                                           Opacity="0.7" Margin="5,0,0,0"/>
+                            </StackPanel>
+                        </Border>
+                        
+                        <!-- Application Control -->
+                        <Border Background="White" BorderBrush="{StaticResource DangerBrush}" 
+                                BorderThickness="2" Padding="15" Margin="0,0,0,10" CornerRadius="5">
+                            <StackPanel>
+                                <TextBlock Text="Application Control" FontSize="14" FontWeight="SemiBold" 
+                                           Foreground="Red" Margin="0,0,0,10"/>
+                                
+                                <Button Content="💣 Self Destruct" 
+                                        Style="{StaticResource DangerButtonStyle}" 
+                                        Click="SelfDestruct_Click" 
+                                        Margin="0,0,0,5"
+                                        ToolTip="Immediately close the entire application"/>
+                                
+                                <TextBlock Text="Closes the application immediately without prompts" 
+                                           FontSize="11" Foreground="Red" 
+                                           Opacity="0.7" Margin="5,0,0,0"/>
                             </StackPanel>
                         </Border>
                     </StackPanel>
