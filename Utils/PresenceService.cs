@@ -5,6 +5,7 @@ using System.Text;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Windows;
 
 namespace GameBox.Utils
 {
@@ -47,6 +48,16 @@ namespace GameBox.Utils
             catch (Exception ex)
             {
                 System.Diagnostics.Debug.WriteLine($"Failed to start presence service: {ex.Message}");
+                try
+                {
+                    Application.Current?.Dispatcher?.BeginInvoke(new Action(() =>
+                    {
+                        MessageBox.Show($"Failed to start presence service on port {PresencePort}:\n{ex.Message}\n\n" +
+                                        "Presence lookup (network scan) will not work until this is fixed.",
+                                        "Network Error", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    }));
+                }
+                catch { }
             }
         }
 

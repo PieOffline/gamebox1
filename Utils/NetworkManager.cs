@@ -30,6 +30,9 @@ namespace GameBox.Utils
         private bool isListening = false;
         private bool isInGame = false;
         private string currentGameName = "";
+        
+        // Registry of game factories for creating game windows
+        private Dictionary<string, Func<Window>> gameFactories = new Dictionary<string, Func<Window>>();
 
         private NetworkManager()
         {
@@ -57,6 +60,17 @@ namespace GameBox.Utils
             catch (Exception ex)
             {
                 System.Diagnostics.Debug.WriteLine($"Failed to start request listener: {ex.Message}");
+                try
+                {
+                    // Show a user-visible warning so you know the listener failed to start
+                    Application.Current?.Dispatcher?.BeginInvoke(new Action(() =>
+                    {
+                        MessageBox.Show($"Failed to start game request listener on port {RequestPort}:\n{ex.Message}\n\n" +
+                                        "Check that no other process is using the port and that your firewall allows inbound connections.",
+                                        "Network Error", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    }));
+                }
+                catch { }
             }
         }
 
@@ -92,6 +106,14 @@ namespace GameBox.Utils
         }
 
         /// <summary>
+        /// Register a game factory for creating game windows when receiving multiplayer requests
+        /// </summary>
+        public void RegisterGameFactory(string gameName, Func<Window> factory)
+        {
+            gameFactories[gameName] = factory;
+        }
+
+        /// <summary>
         /// Send a game request to another player
         /// </summary>
         public async Task<GameRequestResponse> SendGameRequestAsync(string opponentIp, string gameName, string hostCode)
@@ -100,14 +122,41 @@ namespace GameBox.Utils
             {
                 using var client = new TcpClient();
                 
-                // Try to connect with timeout
+                // Try to connect with timeout, and handle connection errors explicitly
                 var connectTask = client.ConnectAsync(opponentIp, RequestPort);
-                if (await Task.WhenAny(connectTask, Task.Delay(3000)) != connectTask)
+                var timeoutTask = Task.Delay(3000);
+
+                var completed = await Task.WhenAny(connectTask, timeoutTask);
+                if (completed == timeoutTask)
                 {
                     return new GameRequestResponse
                     {
                         Success = false,
                         Message = "Connection timeout - opponent may not be online"
+                    };
+                }
+
+                // If connectTask completed but faulted, await it to observe exception and return a friendly message
+                try
+                {
+                    await connectTask; // will rethrow if failed
+                }
+                catch (Exception ex)
+                {
+                    return new GameRequestResponse
+                    {
+                        Success = false,
+                        Message = $"Connection error: {ex.Message}"
+                    };
+                }
+
+                // Ensure the client is actually connected before using the stream
+                if (!client.Connected)
+                {
+                    return new GameRequestResponse
+                    {
+                        Success = false,
+                        Message = "Connection failed - socket not connected"
                     };
                 }
 
@@ -180,6 +229,9 @@ namespace GameBox.Utils
                     if (requestListener == null) break;
 
                     var client = await requestListener.AcceptTcpClientAsync();
+                    
+                    // log remote endpoint for diagnosis
+                    System.Diagnostics.Debug.WriteLine($"Accepted request from {client.Client.RemoteEndPoint}");
                     
                     // Handle request in background with error handling
                     _ = Task.Run(async () =>
@@ -270,6 +322,53 @@ namespace GameBox.Utils
                             // Wait for user response
                             var userResponse = await tcs.Task;
                             await SendResponseAsync(stream, userResponse);
+                            
+                            // If request was accepted, open the game window for P2
+                            if (userResponse.Success)
+                            {
+                                // Use BeginInvoke to create the game window on UI thread
+                                _ = Application.Current.Dispatcher.BeginInvoke(() =>
+                                {
+                                    try
+                                    {
+                                        // Check if we have a factory for this game
+                                        if (gameFactories.TryGetValue(request.GameName, out var factory))
+                                        {
+                                            // Mark as in-game
+                                            SetInGameStatus(true, request.GameName);
+                                            
+                                            // Create and show the game window
+                                            var gameWindow = factory();
+                                            
+                                            // If the game supports multiplayer, pass the opponent IP
+                                            if (gameWindow is IMultiplayerGame multiplayerGame)
+                                            {
+                                                multiplayerGame.SetOpponent(request.SenderIp, isHost: false);
+                                            }
+                                            
+                                            // When game window closes, mark as not in game
+                                            void OnGameClosed(object? s, EventArgs args)
+                                            {
+                                                SetInGameStatus(false);
+                                                gameWindow.Closed -= OnGameClosed;
+                                            }
+                                            gameWindow.Closed += OnGameClosed;
+                                            
+                                            gameWindow.Show();
+                                        }
+                                        else
+                                        {
+                                            System.Diagnostics.Debug.WriteLine($"No factory registered for game: {request.GameName}");
+                                        }
+                                    }
+                                    catch (Exception ex)
+                                    {
+                                        System.Diagnostics.Debug.WriteLine($"Error opening game window for P2: {ex.Message}");
+                                        MessageBox.Show($"Error opening game window: {ex.Message}", "Error", 
+                                            MessageBoxButton.OK, MessageBoxImage.Error);
+                                    }
+                                });
+                            }
                         }
                     }
                 }
