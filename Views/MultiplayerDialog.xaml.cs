@@ -109,7 +109,7 @@ namespace GameBox
 
         private void LocalMultiplayer_Click(object sender, RoutedEventArgs e)
         {
-            // For local multiplayer (testing), use localhost
+            // For local multiplayer (same keyboard/mouse on same PC)
             try
             {
                 StatusText.Text = "Starting local multiplayer game...";
@@ -121,8 +121,13 @@ namespace GameBox
                 // Create and show the game window
                 var gameWindow = _gameFactory();
                 
-                // If the game supports multiplayer, pass localhost
-                if (gameWindow is IMultiplayerGame multiplayerGame)
+                // If the game supports local multiplayer mode
+                if (gameWindow is ILocalMultiplayerGame localGame)
+                {
+                    localGame.SetLocalMultiplayerMode(true);
+                }
+                // Fallback for network-based multiplayer games
+                else if (gameWindow is IMultiplayerGame multiplayerGame)
                 {
                     multiplayerGame.SetOpponent("127.0.0.1", isHost: true);
                 }
@@ -173,5 +178,11 @@ namespace GameBox
     public interface IMultiplayerGame
     {
         void SetOpponent(string opponentIp, bool isHost);
+    }
+
+    // Interface for local multiplayer games (same PC, same keyboard/mouse)
+    public interface ILocalMultiplayerGame
+    {
+        void SetLocalMultiplayerMode(bool enabled);
     }
 }

@@ -11,7 +11,7 @@ using GameBox.Utils;
 
 namespace GameBox.Games
 {
-    public partial class TicTacToeGame : Window, IMultiplayerGame
+    public partial class TicTacToeGame : Window, IMultiplayerGame, ILocalMultiplayerGame
     {
         private string opponentIp = "";
         private bool isHost = false;
@@ -22,11 +22,21 @@ namespace GameBox.Games
         private string mySymbol = "X";
         private Button[,] gameBoard = new Button[3, 3];
         private bool gameActive = false;
+        private bool isLocalMultiplayer = false;
+        private string currentPlayer = "X";
 
         public TicTacToeGame()
         {
             InitializeComponent();
             InitializeGameBoard();
+        }
+
+        public void SetLocalMultiplayerMode(bool enabled)
+        {
+            isLocalMultiplayer = enabled;
+            gameActive = true;
+            currentPlayer = "X";
+            StatusText.Text = "Player X's turn (Local Multiplayer)";
         }
 
         public void SetOpponent(string opponentIp, bool isHost)
@@ -161,7 +171,44 @@ namespace GameBox.Games
 
         private void OnCellClick(int row, int col)
         {
-            if (!gameActive || !isMyTurn || !string.IsNullOrEmpty(gameBoard[row, col].Content?.ToString()))
+            if (!gameActive || !string.IsNullOrEmpty(gameBoard[row, col].Content?.ToString()))
+                return;
+
+            // Local multiplayer mode - players take turns with same mouse
+            if (isLocalMultiplayer)
+            {
+                // Make move for current player
+                gameBoard[row, col].Content = currentPlayer;
+                gameBoard[row, col].Foreground = currentPlayer == "X" ? Brushes.Blue : Brushes.Red;
+                
+                // Check for win
+                if (CheckWin(currentPlayer))
+                {
+                    StatusText.Text = $"Player {currentPlayer} wins! 🎉";
+                    gameActive = false;
+                    MessageBox.Show($"Congratulations! Player {currentPlayer} won!", "Victory!", 
+                        MessageBoxButton.OK, MessageBoxImage.Information);
+                    return;
+                }
+                
+                // Check for draw
+                if (CheckDraw())
+                {
+                    StatusText.Text = "It's a draw!";
+                    gameActive = false;
+                    MessageBox.Show("Game ended in a draw!", "Draw", 
+                        MessageBoxButton.OK, MessageBoxImage.Information);
+                    return;
+                }
+                
+                // Switch turns
+                currentPlayer = currentPlayer == "X" ? "O" : "X";
+                StatusText.Text = $"Player {currentPlayer}'s turn";
+                return;
+            }
+
+            // Network multiplayer mode
+            if (!isMyTurn)
                 return;
             
             // Make move
@@ -298,17 +345,25 @@ namespace GameBox.Games
         private void NewGame_Click(object sender, RoutedEventArgs e)
         {
             InitializeGameBoard();
-            if (isHost)
+            
+            if (isLocalMultiplayer)
+            {
+                currentPlayer = "X";
+                StatusText.Text = "Player X's turn (Local Multiplayer)";
+                gameActive = true;
+            }
+            else if (isHost)
             {
                 isMyTurn = true;
                 StatusText.Text = $"New game started! Your turn ({mySymbol})";
+                gameActive = true;
             }
             else
             {
                 isMyTurn = false;
                 StatusText.Text = "New game started! Waiting for opponent's turn";
+                gameActive = true;
             }
-            gameActive = true;
         }
 
         private void BackToMenu_Click(object sender, RoutedEventArgs e)
