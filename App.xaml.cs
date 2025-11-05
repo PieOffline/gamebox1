@@ -14,7 +14,7 @@ public partial class App : Application
     {
         base.OnStartup(e);
         
-        // Initialize developer command manager (starts listening on port 42422)
+        // Initialize developer command manager (starts listening on port 42423)
         _ = DevCommandManager.Instance;
         
         // Create and show the main window

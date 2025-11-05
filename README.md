@@ -44,9 +44,11 @@ Each player gets a unique **fruit code** based on their IP address:
 5. If Player 2 accepts, both players connect and the game begins
 6. If Player 2 declines, Player 1 is notified
 
-**Dual Port System:**
+**Multi-Port System:**
 - **Port 42420** - Game requests and notifications
 - **Port 42421** - Active game connections (keeps request port free)
+- **Port 42422** - Player presence service (detects online players)
+- **Port 42423** - Developer commands (broadcast commands to all PCs)
 
 **Advanced IP Format (Developer Feature):**
 For connecting to players on different subnets, the system supports custom IP formats:
