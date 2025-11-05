@@ -34,6 +34,8 @@ namespace GameBox.Utils
         private NetworkManager()
         {
             StartListening();
+            // Initialize presence service
+            _ = PresenceService.Instance;
         }
 
         /// <summary>
@@ -82,6 +84,11 @@ namespace GameBox.Utils
         {
             isInGame = inGame;
             currentGameName = gameName;
+            
+            // Update presence service status
+            PresenceService.Instance.UpdateStatus(
+                inGame ? PlayerStatus.InGame : PlayerStatus.Available
+            );
         }
 
         /// <summary>

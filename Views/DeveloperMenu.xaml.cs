@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Net.NetworkInformation;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using GameBox.Utils;
@@ -43,42 +44,58 @@ namespace GameBox.Views
             
             // Get network base
             var networkBase = NetworkUtils.GetNetworkBase();
+            var localIp = NetworkUtils.GetLocalIPAddress();
             
-            // Scan common IP range (1-254) for active players
-            await Task.Run(() =>
+            // Scan common IP range (1-254) for players with GameBox app open
+            await Task.Run(async () =>
             {
+                // Limit concurrent connections to avoid overwhelming the network
+                using var semaphore = new SemaphoreSlim(20);
+                var tasks = new List<Task>();
+                var playersLock = new object();
+                
                 for (int i = 1; i <= 254; i++)
                 {
                     var ip = $"{networkBase}.{i}";
-                    var localIp = NetworkUtils.GetLocalIPAddress();
                     
                     // Skip own IP
                     if (ip == localIp) continue;
                     
-                    // Quick ping check
-                    try
+                    var checkTask = Task.Run(async () =>
                     {
-                        using var ping = new Ping();
-                        var reply = ping.Send(ip, 100);
-                        
-                        if (reply.Status == IPStatus.Success)
+                        await semaphore.WaitAsync();
+                        try
                         {
-                            var fruitCode = NetworkUtils.IpToFruitCode(ip);
-                            var status = NetworkManager.Instance.IsInGame ? "In Game" : "Available";
+                            // Check if GameBox app is running on this IP
+                            var presence = await PresenceService.CheckPlayerPresenceAsync(ip, 500);
                             
-                            Dispatcher.Invoke(() =>
+                            if (presence != null && presence.IsOnline)
                             {
-                                onlinePlayers.Add(new OnlinePlayer
+                                var fruitCode = NetworkUtils.IpToFruitCode(ip);
+                                var status = presence.Status == PlayerStatus.InGame ? "In Game" : "Available";
+                                
+                                lock (playersLock)
                                 {
-                                    IpAddress = ip,
-                                    FruitCode = fruitCode,
-                                    Status = "Online"
-                                });
-                            });
+                                    onlinePlayers.Add(new OnlinePlayer
+                                    {
+                                        IpAddress = ip,
+                                        FruitCode = fruitCode,
+                                        Status = status
+                                    });
+                                }
+                            }
                         }
-                    }
-                    catch { }
+                        catch { }
+                        finally
+                        {
+                            semaphore.Release();
+                        }
+                    });
+                    
+                    tasks.Add(checkTask);
                 }
+                
+                await Task.WhenAll(tasks);
             });
             
             OnlinePlayersList.ItemsSource = onlinePlayers;

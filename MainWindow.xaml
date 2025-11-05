@@ -105,9 +105,11 @@
                 <Border Background="White" BorderBrush="{StaticResource PrimaryBlueBrush}" 
                         BorderThickness="2" Padding="15" Margin="0,0,0,20" CornerRadius="10">
                     <StackPanel>
-                        <StackPanel Orientation="Horizontal">
+                        <StackPanel Orientation="Horizontal" Margin="0,0,0,10">
                             <TextBlock Text="Detected Players: " FontSize="14" 
                                        Foreground="{StaticResource TextDarkBrush}"/>
+                        </StackPanel>
+                        <ScrollViewer MaxHeight="150" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
                             <ItemsControl x:Name="OnlinePlayersDisplay">
                                 <ItemsControl.ItemsPanel>
                                     <ItemsPanelTemplate>
@@ -116,15 +118,20 @@
                                 </ItemsControl.ItemsPanel>
                                 <ItemsControl.ItemTemplate>
                                     <DataTemplate>
-                                        <Border Background="{StaticResource SuccessGreenBrush}" 
-                                                Padding="8,4" Margin="5,0" CornerRadius="12">
-                                            <TextBlock Text="{Binding}" FontSize="12" FontWeight="Bold"
-                                                       Foreground="{StaticResource TextLightBrush}"/>
+                                        <Border Background="{Binding StatusColor}" 
+                                                Padding="8,4" Margin="5,2" CornerRadius="12">
+                                            <StackPanel Orientation="Horizontal">
+                                                <TextBlock Text="{Binding PlayerCode}" FontSize="12" FontWeight="Bold"
+                                                           Foreground="{StaticResource TextLightBrush}"/>
+                                                <TextBlock Text="{Binding StatusText}" FontSize="10" 
+                                                           Foreground="{StaticResource TextLightBrush}" 
+                                                           Margin="5,0,0,0" VerticalAlignment="Center"/>
+                                            </StackPanel>
                                         </Border>
                                     </DataTemplate>
                                 </ItemsControl.ItemTemplate>
                             </ItemsControl>
-                        </StackPanel>
+                        </ScrollViewer>
                         <Button Content="🔄 Scan for Players" Style="{StaticResource WarningButtonStyle}" 
                                 Click="ScanForPlayers_Click" HorizontalAlignment="Left" Margin="0,10,0,0"/>
                     </StackPanel>

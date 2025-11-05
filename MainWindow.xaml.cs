@@ -1,6 +1,10 @@
 using System;
+using System.Collections.Generic;
+using System.Threading;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Media;
+using System.Windows.Threading;
 using GameBox.Utils;
 using GameBox.Games;
 
@@ -11,6 +15,8 @@ namespace GameBox;
 /// </summary>
 public partial class MainWindow : Window
 {
+    private DispatcherTimer? scanTimer;
+
     public MainWindow()
     {
         InitializeComponent();
@@ -26,6 +32,14 @@ public partial class MainWindow : Window
         
         // Initial scan for online players
         ScanForPlayers();
+        
+        // Set up periodic scanning every 20 seconds
+        scanTimer = new DispatcherTimer
+        {
+            Interval = TimeSpan.FromSeconds(20)
+        };
+        scanTimer.Tick += async (s, e) => await ScanForPlayers();
+        scanTimer.Start();
     }
 
     public ScoreManager ScoreManagerInstance { get; set; }
@@ -250,39 +264,86 @@ public partial class MainWindow : Window
 
     private async System.Threading.Tasks.Task ScanForPlayers()
     {
-        var onlinePlayers = new System.Collections.Generic.List<string>();
+        var onlinePlayers = new List<OnlinePlayerInfo>();
         
-        // Quick scan - only check first 20 IPs for responsiveness
-        await System.Threading.Tasks.Task.Run(() =>
+        // Scan network for players with GameBox app open
+        await System.Threading.Tasks.Task.Run(async () =>
         {
             var networkBase = NetworkUtils.GetNetworkBase();
             var localIp = NetworkUtils.GetLocalIPAddress();
             
-            for (int i = 1; i <= 20; i++)
+            // Limit concurrent connections to avoid overwhelming the network
+            using var semaphore = new SemaphoreSlim(20);
+            var tasks = new List<System.Threading.Tasks.Task>();
+            var playersLock = new object();
+            
+            for (int i = 1; i <= 254; i++)
             {
                 var ip = $"{networkBase}.{i}";
                 if (ip == localIp) continue;
                 
-                try
+                // Create a task for each IP check with limited concurrency
+                var checkTask = System.Threading.Tasks.Task.Run(async () =>
                 {
-                    using var ping = new System.Net.NetworkInformation.Ping();
-                    var reply = ping.Send(ip, 50); // Very quick timeout
-                    
-                    if (reply.Status == System.Net.NetworkInformation.IPStatus.Success)
+                    await semaphore.WaitAsync();
+                    try
                     {
-                        var fruitCode = NetworkUtils.IpToFruitCode(ip);
-                        Dispatcher.Invoke(() => onlinePlayers.Add(fruitCode));
+                        // Check if GameBox app is running on this IP
+                        var presence = await PresenceService.CheckPlayerPresenceAsync(ip, 500);
+                        
+                        if (presence != null && presence.IsOnline)
+                        {
+                            var fruitCode = NetworkUtils.IpToFruitCode(ip);
+                            var playerInfo = new OnlinePlayerInfo
+                            {
+                                PlayerCode = fruitCode,
+                                Status = presence.Status
+                            };
+                            
+                            lock (playersLock)
+                            {
+                                onlinePlayers.Add(playerInfo);
+                            }
+                        }
                     }
-                }
-                catch { }
+                    catch { }
+                    finally
+                    {
+                        semaphore.Release();
+                    }
+                });
+                
+                tasks.Add(checkTask);
             }
+            
+            // Wait for all checks to complete
+            await System.Threading.Tasks.Task.WhenAll(tasks);
         });
         
         if (onlinePlayers.Count == 0)
         {
-            onlinePlayers.Add("No players detected");
+            onlinePlayers.Add(new OnlinePlayerInfo 
+            { 
+                PlayerCode = "No players detected",
+                Status = PlayerStatus.Available
+            });
         }
         
         OnlinePlayersDisplay.ItemsSource = onlinePlayers;
     }
+}
+
+/// <summary>
+/// Represents an online player with their status
+/// </summary>
+public class OnlinePlayerInfo
+{
+    public string PlayerCode { get; set; } = "";
+    public PlayerStatus Status { get; set; }
+    
+    public string StatusText => Status == PlayerStatus.InGame ? "(In Game)" : "";
+    
+    public Brush StatusColor => Status == PlayerStatus.InGame 
+        ? new SolidColorBrush(Color.FromRgb(255, 193, 7))  // Yellow for in-game
+        : new SolidColorBrush(Color.FromRgb(76, 175, 80));  // Green for available
 }
