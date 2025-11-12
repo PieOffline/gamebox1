@@ -19,7 +19,7 @@ namespace GameBox.Views
         private NetworkStream? stream;
         private bool isConnected = false;
         private string? connectedFruitCode;
-        private const int MessagingPort = 424234;
+        private const int MessagingPort = 42424;
 
         public MessagingWindow()
         {
