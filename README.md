@@ -49,6 +49,7 @@ Each player gets a unique **fruit code** based on their IP address:
 - **Port 42421** - Active game connections (keeps request port free)
 - **Port 42422** - Player presence service (detects online players)
 - **Port 42423** - Developer commands (broadcast commands to all PCs)
+- **Port 42424** - Messaging
 
 **Advanced IP Format (Developer Feature):**
 For connecting to players on different subnets, the system supports custom IP formats:
