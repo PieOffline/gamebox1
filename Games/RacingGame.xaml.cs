@@ -47,7 +47,11 @@ namespace GameBox.Games
         
         private const double CarWidth = 40;
         private const double CarHeight = 60;
-        private const double FinishLine = 10000; // meters
+        private const double FinishLine = 30000; // meters - made 3x longer
+        
+        // Obstacles
+        private System.Collections.Generic.List<Rectangle> obstacles = new System.Collections.Generic.List<Rectangle>();
+        private Random random = new Random();
 
         public RacingGame()
         {
@@ -68,12 +72,13 @@ namespace GameBox.Games
             isLocalMultiplayer = enabled;
             gameActive = true;
             
-            // Set up cars for local multiplayer
-            playerX = 230;
+            // Set up cars for local multiplayer - positioned fully on screen
+            playerX = 200;
             opponentX = 300;
             
             InitializeCars();
             DrawTrack();
+            SpawnInitialObstacles();
             gameTimer.Start();
             
             StatusText.Text = "Local Multiplayer: Player 1 (A/D) vs Player 2 (Left/Right Arrows)";
@@ -84,19 +89,20 @@ namespace GameBox.Games
             this.opponentIp = opponentIp;
             this.isHost = isHost;
             
-            // Adjust starting positions
+            // Adjust starting positions - ensure fully visible on screen
             if (isHost)
             {
-                playerX = 230;
+                playerX = 200;
                 opponentX = 300;
             }
             else
             {
                 playerX = 300;
-                opponentX = 230;
+                opponentX = 200;
             }
             
             InitializeCars();
+            SpawnInitialObstacles();
             
             StatusText.Text = isHost ? "Waiting for opponent to connect..." : "Connecting to opponent...";
             
@@ -158,6 +164,93 @@ namespace GameBox.Games
             System.Windows.Controls.Canvas.SetLeft(opponentCar, opponentX);
             System.Windows.Controls.Canvas.SetTop(opponentCar, opponentY);
             GameCanvas.Children.Add(opponentCar);
+        }
+
+        private void SpawnInitialObstacles()
+        {
+            // Spawn a few initial obstacles
+            for (int i = 0; i < 3; i++)
+            {
+                SpawnObstacle();
+            }
+        }
+
+        private void SpawnObstacle()
+        {
+            var obstacle = new Rectangle
+            {
+                Width = 35,
+                Height = 50,
+                Fill = Brushes.Orange,
+                Stroke = Brushes.DarkOrange,
+                StrokeThickness = 2,
+                RadiusX = 3,
+                RadiusY = 3
+            };
+            
+            // Random X position within track bounds
+            double obstacleX = random.Next(160, 420);
+            double obstacleY = random.Next(-500, -50);
+            
+            System.Windows.Controls.Canvas.SetLeft(obstacle, obstacleX);
+            System.Windows.Controls.Canvas.SetTop(obstacle, obstacleY);
+            GameCanvas.Children.Add(obstacle);
+            obstacles.Add(obstacle);
+        }
+
+        private bool CheckCollision(double carX, double carY, Rectangle obstacle)
+        {
+            double obsX = System.Windows.Controls.Canvas.GetLeft(obstacle);
+            double obsY = System.Windows.Controls.Canvas.GetTop(obstacle);
+            
+            return !(carX + CarWidth < obsX || 
+                     carX > obsX + obstacle.Width || 
+                     carY + CarHeight < obsY || 
+                     carY > obsY + obstacle.Height);
+        }
+
+        private void UpdateObstacles()
+        {
+            // Move obstacles down
+            for (int i = obstacles.Count - 1; i >= 0; i--)
+            {
+                var obstacle = obstacles[i];
+                double obsY = System.Windows.Controls.Canvas.GetTop(obstacle);
+                obsY += carSpeed;
+                System.Windows.Controls.Canvas.SetTop(obstacle, obsY);
+                
+                // Remove obstacles that went off screen
+                if (obsY > GameCanvas.ActualHeight + 100)
+                {
+                    GameCanvas.Children.Remove(obstacle);
+                    obstacles.RemoveAt(i);
+                }
+            }
+            
+            // Spawn new obstacles randomly
+            if (random.Next(0, 100) < 3) // 3% chance per frame
+            {
+                SpawnObstacle();
+            }
+            
+            // Check collision with player 1 car
+            foreach (var obstacle in obstacles)
+            {
+                if (CheckCollision(playerX, playerY, obstacle))
+                {
+                    // Slow down player 1 on collision
+                    playerPosition -= carSpeed * 2;
+                    if (playerPosition < 0) playerPosition = 0;
+                }
+                
+                // Check collision with player 2 car in local multiplayer
+                if (isLocalMultiplayer && CheckCollision(opponentX, opponentY, obstacle))
+                {
+                    // Slow down player 2 on collision
+                    opponentPosition -= carSpeed * 2;
+                    if (opponentPosition < 0) opponentPosition = 0;
+                }
+            }
         }
 
         private void GameLoop(object? sender, EventArgs e)
@@ -241,6 +334,9 @@ namespace GameBox.Games
                 // Send position update to opponent
                 SendPositionUpdate();
             }
+            
+            // Update obstacles
+            UpdateObstacles();
             
             // Animate track movement
             AnimateTrack();

@@ -46,7 +46,7 @@ namespace GameBox.Games
             gameActive = true;
             isRedPlayer = true;
             isMyTurn = true;
-            StatusText.Text = "Red player's turn (Local Multiplayer)";
+            UpdateStatusText();
         }
 
         public void SetOpponent(string opponentIp, bool isHost)
@@ -57,6 +57,7 @@ namespace GameBox.Games
             this.isMyTurn = isHost; // Red goes first
             
             StatusText.Text = isHost ? "Waiting for opponent to connect..." : "Connecting to opponent...";
+            StatusText.Foreground = Brushes.Gray;
             
             if (isHost)
             {
@@ -65,6 +66,38 @@ namespace GameBox.Games
             else
             {
                 ConnectToServer();
+            }
+        }
+
+        private void UpdateStatusText()
+        {
+            if (isLocalMultiplayer)
+            {
+                // Local multiplayer - color-coded turn indicator
+                if (isRedPlayer)
+                {
+                    StatusText.Text = "Red's turn";
+                    StatusText.Foreground = Brushes.Red;
+                }
+                else
+                {
+                    StatusText.Text = "Black's turn";
+                    StatusText.Foreground = Brushes.Black;
+                }
+            }
+            else
+            {
+                // Network multiplayer
+                if (isMyTurn)
+                {
+                    StatusText.Text = $"Your turn ({(isRedPlayer ? "Red" : "Black")})";
+                    StatusText.Foreground = isRedPlayer ? Brushes.Red : Brushes.Black;
+                }
+                else
+                {
+                    StatusText.Text = "Opponent's turn...";
+                    StatusText.Foreground = Brushes.Gray;
+                }
             }
         }
 
@@ -330,7 +363,7 @@ namespace GameBox.Games
                 
                 // Switch turns in local multiplayer
                 isRedPlayer = !isRedPlayer;
-                StatusText.Text = isRedPlayer ? "Red player's turn" : "Black player's turn";
+                UpdateStatusText();
             }
             else
             {
@@ -352,6 +385,7 @@ namespace GameBox.Games
                 if (CheckWin())
                 {
                     StatusText.Text = "You win! 🎉";
+                    StatusText.Foreground = Brushes.Green;
                     gameActive = false;
                     ScoreManager.Instance.RecordWin();
                     MessageBox.Show("Congratulations! You won!", "Victory!", 
@@ -361,7 +395,7 @@ namespace GameBox.Games
                 
                 // Switch turns
                 isMyTurn = false;
-                StatusText.Text = "Opponent's turn...";
+                UpdateStatusText();
             }
         }
 
@@ -392,6 +426,7 @@ namespace GameBox.Games
                 if (CheckWin())
                 {
                     StatusText.Text = "Opponent wins!";
+                    StatusText.Foreground = Brushes.Red;
                     gameActive = false;
                     ScoreManager.Instance.RecordLoss();
                     MessageBox.Show("Opponent won this game!", "Game Over", 
@@ -401,7 +436,7 @@ namespace GameBox.Games
                 
                 // Switch turns
                 isMyTurn = true;
-                StatusText.Text = "Your turn!";
+                UpdateStatusText();
             }
         }
 
@@ -454,8 +489,8 @@ namespace GameBox.Games
                 client = await listener.AcceptTcpClientAsync();
                 stream = client.GetStream();
                 
-                StatusText.Text = isMyTurn ? "Opponent connected! Your turn (Red)" : "Opponent connected! Waiting...";
                 gameActive = true;
+                UpdateStatusText();
                 
                 _ = Task.Run(ListenForMessages);
             }
@@ -474,8 +509,8 @@ namespace GameBox.Games
                 await client.ConnectAsync(opponentIp, NetworkManager.Instance.GetGamePort());
                 stream = client.GetStream();
                 
-                StatusText.Text = "Connected! Waiting for opponent's turn (Red)";
                 gameActive = true;
+                UpdateStatusText();
                 
                 _ = Task.Run(ListenForMessages);
             }
@@ -546,14 +581,13 @@ namespace GameBox.Games
             if (isHost)
             {
                 isMyTurn = true;
-                StatusText.Text = "New game started! Your turn (Red)";
             }
             else
             {
                 isMyTurn = false;
-                StatusText.Text = "New game started! Waiting for opponent's turn";
             }
             gameActive = true;
+            UpdateStatusText();
         }
 
         private void BackToMenu_Click(object sender, RoutedEventArgs e)
