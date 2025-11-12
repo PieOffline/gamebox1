@@ -80,6 +80,7 @@ namespace GameBox.Views
             catch (Exception ex)
             {
                 StatusText.Text = $"Failed to start listening: {ex.Message}";
+                
                 StatusText.Foreground = Brushes.Red;
             }
         }
