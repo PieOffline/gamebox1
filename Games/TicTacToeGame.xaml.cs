@@ -36,7 +36,7 @@ namespace GameBox.Games
             isLocalMultiplayer = enabled;
             gameActive = true;
             currentPlayer = "X";
-            StatusText.Text = "Player X's turn (Local Multiplayer)";
+            UpdateStatusText();
         }
 
         public void SetOpponent(string opponentIp, bool isHost)
@@ -57,6 +57,38 @@ namespace GameBox.Games
                 isMyTurn = false;
                 StatusText.Text = "Connecting to opponent...";
                 ConnectToServer();
+            }
+        }
+
+        private void UpdateStatusText()
+        {
+            if (isLocalMultiplayer)
+            {
+                // Local multiplayer - color-coded turn indicator
+                if (currentPlayer == "X")
+                {
+                    StatusText.Text = "X's turn";
+                    StatusText.Foreground = Brushes.Blue;
+                }
+                else
+                {
+                    StatusText.Text = "O's turn";
+                    StatusText.Foreground = Brushes.Red;
+                }
+            }
+            else
+            {
+                // Network multiplayer
+                if (isMyTurn)
+                {
+                    StatusText.Text = $"Your turn ({mySymbol})";
+                    StatusText.Foreground = mySymbol == "X" ? Brushes.Blue : Brushes.Red;
+                }
+                else
+                {
+                    StatusText.Text = "Opponent's turn...";
+                    StatusText.Foreground = Brushes.Gray;
+                }
             }
         }
 
@@ -99,12 +131,13 @@ namespace GameBox.Games
                 listener.Start();
                 
                 StatusText.Text = "Waiting for opponent...";
+                StatusText.Foreground = Brushes.Gray;
                 
                 client = await listener.AcceptTcpClientAsync();
                 stream = client.GetStream();
                 
-                StatusText.Text = "Opponent connected! Your turn (X)";
                 gameActive = true;
+                UpdateStatusText();
                 
                 // Start listening for messages
                 _ = Task.Run(ListenForMessages);
@@ -124,8 +157,8 @@ namespace GameBox.Games
                 await client.ConnectAsync(opponentIp, 12345);
                 stream = client.GetStream();
                 
-                StatusText.Text = "Connected! Waiting for opponent's turn (X)";
                 gameActive = true;
+                UpdateStatusText();
                 
                 // Start listening for messages
                 _ = Task.Run(ListenForMessages);
@@ -203,7 +236,7 @@ namespace GameBox.Games
                 
                 // Switch turns
                 currentPlayer = currentPlayer == "X" ? "O" : "X";
-                StatusText.Text = $"Player {currentPlayer}'s turn";
+                UpdateStatusText();
                 return;
             }
 
@@ -223,6 +256,7 @@ namespace GameBox.Games
             if (CheckWin(mySymbol))
             {
                 StatusText.Text = "You win! 🎉";
+                StatusText.Foreground = Brushes.Green;
                 gameActive = false;
                 ScoreManager.Instance.RecordWin();
                 MessageBox.Show("Congratulations! You won!", "Victory!", 
@@ -234,6 +268,7 @@ namespace GameBox.Games
             if (CheckDraw())
             {
                 StatusText.Text = "It's a draw!";
+                StatusText.Foreground = Brushes.Gray;
                 gameActive = false;
                 MessageBox.Show("Game ended in a draw!", "Draw", 
                     MessageBoxButton.OK, MessageBoxImage.Information);
@@ -242,7 +277,7 @@ namespace GameBox.Games
             
             // Switch turns
             isMyTurn = false;
-            StatusText.Text = "Opponent's turn...";
+            UpdateStatusText();
         }
 
         private void ProcessOpponentMove(GameMove move)
@@ -255,6 +290,7 @@ namespace GameBox.Games
             if (CheckWin(move.Symbol))
             {
                 StatusText.Text = "Opponent wins!";
+                StatusText.Foreground = Brushes.Red;
                 gameActive = false;
                 ScoreManager.Instance.RecordLoss();
                 MessageBox.Show("Opponent won this round!", "Game Over", 
@@ -266,6 +302,7 @@ namespace GameBox.Games
             if (CheckDraw())
             {
                 StatusText.Text = "It's a draw!";
+                StatusText.Foreground = Brushes.Gray;
                 gameActive = false;
                 MessageBox.Show("Game ended in a draw!", "Draw", 
                     MessageBoxButton.OK, MessageBoxImage.Information);
@@ -274,7 +311,7 @@ namespace GameBox.Games
             
             // Switch turns
             isMyTurn = true;
-            StatusText.Text = $"Your turn ({mySymbol})";
+            UpdateStatusText();
         }
 
         private async void SendMove(GameMove move)
@@ -349,20 +386,20 @@ namespace GameBox.Games
             if (isLocalMultiplayer)
             {
                 currentPlayer = "X";
-                StatusText.Text = "Player X's turn (Local Multiplayer)";
                 gameActive = true;
+                UpdateStatusText();
             }
             else if (isHost)
             {
                 isMyTurn = true;
-                StatusText.Text = $"New game started! Your turn ({mySymbol})";
                 gameActive = true;
+                UpdateStatusText();
             }
             else
             {
                 isMyTurn = false;
-                StatusText.Text = "New game started! Waiting for opponent's turn";
                 gameActive = true;
+                UpdateStatusText();
             }
         }
 

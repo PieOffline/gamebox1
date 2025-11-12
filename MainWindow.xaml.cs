@@ -7,6 +7,7 @@ using System.Windows.Media;
 using System.Windows.Threading;
 using GameBox.Utils;
 using GameBox.Games;
+using GameBox.Views;
 
 namespace GameBox;
 
@@ -181,6 +182,12 @@ public partial class MainWindow : Window
         {
             ScoreManager.Instance.Reset();
         }
+    }
+
+    private void Messaging_Click(object sender, RoutedEventArgs e)
+    {
+        var messagingWindow = new MessagingWindow();
+        messagingWindow.Show();
     }
 
     private void DeveloperMenu_Click(object sender, RoutedEventArgs e)

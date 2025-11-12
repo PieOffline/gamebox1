@@ -254,15 +254,23 @@ namespace GameBox.Games
             Canvas.SetTop(bullet, playerY + TankSize / 2);
             GameCanvas.Children.Add(bullet);
             
-            // Animate bullet towards player 2
+            // Calculate initial direction (straight line, no tracking)
+            double initialDx = opponentX - (playerX + TankSize / 2);
+            double initialDy = opponentY - (playerY + TankSize / 2);
+            double initialDistance = Math.Sqrt(initialDx * initialDx + initialDy * initialDy);
+            double velocityX = (initialDx / initialDistance) * 10;
+            double velocityY = (initialDy / initialDistance) * 10;
+            
+            // Animate bullet in straight line
             var bulletTimer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(16) };
             bulletTimer.Tick += (s, e) =>
             {
-                double dx = opponentX - Canvas.GetLeft(bullet);
-                double dy = opponentY - Canvas.GetTop(bullet);
-                double distance = Math.Sqrt(dx * dx + dy * dy);
+                // Check collision with player 2
+                double bulletX = Canvas.GetLeft(bullet);
+                double bulletY = Canvas.GetTop(bullet);
+                double distToOpponent = Math.Sqrt(Math.Pow(bulletX - opponentX, 2) + Math.Pow(bulletY - opponentY, 2));
                 
-                if (distance < 30)
+                if (distToOpponent < 30)
                 {
                     // Hit player 2
                     bulletTimer.Stop();
@@ -280,8 +288,8 @@ namespace GameBox.Games
                         MessageBox.Show("Player 1 wins!", "Game Over", MessageBoxButton.OK, MessageBoxImage.Information);
                     }
                 }
-                else if (Canvas.GetLeft(bullet) < 0 || Canvas.GetLeft(bullet) > GameCanvas.ActualWidth ||
-                         Canvas.GetTop(bullet) < 0 || Canvas.GetTop(bullet) > GameCanvas.ActualHeight)
+                else if (bulletX < 0 || bulletX > GameCanvas.ActualWidth ||
+                         bulletY < 0 || bulletY > GameCanvas.ActualHeight)
                 {
                     // Out of bounds
                     bulletTimer.Stop();
@@ -289,9 +297,9 @@ namespace GameBox.Games
                 }
                 else
                 {
-                    // Move bullet
-                    Canvas.SetLeft(bullet, Canvas.GetLeft(bullet) + (dx / distance) * 10);
-                    Canvas.SetTop(bullet, Canvas.GetTop(bullet) + (dy / distance) * 10);
+                    // Move bullet in straight line
+                    Canvas.SetLeft(bullet, bulletX + velocityX);
+                    Canvas.SetTop(bullet, bulletY + velocityY);
                 }
             };
             bulletTimer.Start();
@@ -311,15 +319,23 @@ namespace GameBox.Games
             Canvas.SetTop(bullet, opponentY + TankSize / 2);
             GameCanvas.Children.Add(bullet);
             
-            // Animate bullet towards player 1
+            // Calculate initial direction (straight line, no tracking)
+            double initialDx = playerX - (opponentX + TankSize / 2);
+            double initialDy = playerY - (opponentY + TankSize / 2);
+            double initialDistance = Math.Sqrt(initialDx * initialDx + initialDy * initialDy);
+            double velocityX = (initialDx / initialDistance) * 10;
+            double velocityY = (initialDy / initialDistance) * 10;
+            
+            // Animate bullet in straight line
             var bulletTimer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(16) };
             bulletTimer.Tick += (s, e) =>
             {
-                double dx = playerX - Canvas.GetLeft(bullet);
-                double dy = playerY - Canvas.GetTop(bullet);
-                double distance = Math.Sqrt(dx * dx + dy * dy);
+                // Check collision with player 1
+                double bulletX = Canvas.GetLeft(bullet);
+                double bulletY = Canvas.GetTop(bullet);
+                double distToPlayer = Math.Sqrt(Math.Pow(bulletX - playerX, 2) + Math.Pow(bulletY - playerY, 2));
                 
-                if (distance < 30)
+                if (distToPlayer < 30)
                 {
                     // Hit player 1
                     bulletTimer.Stop();
@@ -334,8 +350,8 @@ namespace GameBox.Games
                         MessageBox.Show("Player 2 wins!", "Game Over", MessageBoxButton.OK, MessageBoxImage.Information);
                     }
                 }
-                else if (Canvas.GetLeft(bullet) < 0 || Canvas.GetLeft(bullet) > GameCanvas.ActualWidth ||
-                         Canvas.GetTop(bullet) < 0 || Canvas.GetTop(bullet) > GameCanvas.ActualHeight)
+                else if (bulletX < 0 || bulletX > GameCanvas.ActualWidth ||
+                         bulletY < 0 || bulletY > GameCanvas.ActualHeight)
                 {
                     // Out of bounds
                     bulletTimer.Stop();
@@ -343,9 +359,9 @@ namespace GameBox.Games
                 }
                 else
                 {
-                    // Move bullet
-                    Canvas.SetLeft(bullet, Canvas.GetLeft(bullet) + (dx / distance) * 10);
-                    Canvas.SetTop(bullet, Canvas.GetTop(bullet) + (dy / distance) * 10);
+                    // Move bullet in straight line
+                    Canvas.SetLeft(bullet, bulletX + velocityX);
+                    Canvas.SetTop(bullet, bulletY + velocityY);
                 }
             };
             bulletTimer.Start();
@@ -365,15 +381,23 @@ namespace GameBox.Games
             Canvas.SetTop(bullet, playerY + TankSize / 2);
             GameCanvas.Children.Add(bullet);
             
-            // Animate bullet towards opponent
+            // Calculate initial direction (straight line, no tracking)
+            double initialDx = opponentX - (playerX + TankSize / 2);
+            double initialDy = opponentY - (playerY + TankSize / 2);
+            double initialDistance = Math.Sqrt(initialDx * initialDx + initialDy * initialDy);
+            double velocityX = (initialDx / initialDistance) * 10;
+            double velocityY = (initialDy / initialDistance) * 10;
+            
+            // Animate bullet in straight line
             var bulletTimer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(16) };
             bulletTimer.Tick += (s, e) =>
             {
-                double dx = opponentX - Canvas.GetLeft(bullet);
-                double dy = opponentY - Canvas.GetTop(bullet);
-                double distance = Math.Sqrt(dx * dx + dy * dy);
+                // Check collision with opponent
+                double bulletX = Canvas.GetLeft(bullet);
+                double bulletY = Canvas.GetTop(bullet);
+                double distToOpponent = Math.Sqrt(Math.Pow(bulletX - opponentX, 2) + Math.Pow(bulletY - opponentY, 2));
                 
-                if (distance < 10)
+                if (distToOpponent < 20)
                 {
                     // Hit opponent
                     bulletTimer.Stop();
@@ -384,8 +408,8 @@ namespace GameBox.Games
                     playerScore += 10;
                     PlayerScoreText.Text = playerScore.ToString();
                 }
-                else if (Canvas.GetLeft(bullet) < 0 || Canvas.GetLeft(bullet) > GameCanvas.ActualWidth ||
-                         Canvas.GetTop(bullet) < 0 || Canvas.GetTop(bullet) > GameCanvas.ActualHeight)
+                else if (bulletX < 0 || bulletX > GameCanvas.ActualWidth ||
+                         bulletY < 0 || bulletY > GameCanvas.ActualHeight)
                 {
                     // Out of bounds
                     bulletTimer.Stop();
@@ -393,9 +417,9 @@ namespace GameBox.Games
                 }
                 else
                 {
-                    // Move bullet
-                    Canvas.SetLeft(bullet, Canvas.GetLeft(bullet) + (dx / distance) * 10);
-                    Canvas.SetTop(bullet, Canvas.GetTop(bullet) + (dy / distance) * 10);
+                    // Move bullet in straight line
+                    Canvas.SetLeft(bullet, bulletX + velocityX);
+                    Canvas.SetTop(bullet, bulletY + velocityY);
                 }
             };
             bulletTimer.Start();
