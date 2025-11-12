@@ -11,7 +11,7 @@ Welcome to GameBox! A collection of engaging single-player and multiplayer mini-
 - **🧩 Tetris** - Falling blocks puzzle (Fully implemented)
 - **🃏 Memory Match** - Flip cards to find pairs (Fully implemented)
 - **🧱 Breakout** - Break bricks with ball and paddle (Fully implemented)
-- **🌌 Asteroids** - Spaceship shooting asteroids (Fully implemented)
+- **🌌 Asteroids** - Spaceship shooting asteroids (Fully implemented) [May crash app!!!]
 - **🌀 Maze Runner** - Navigate through maze (Fully implemented)
 - **🎵 Simon Says** - Repeat color sequences (Fully implemented)
 - **🔢 2048** - Combine numbered tiles (Fully implemented)
